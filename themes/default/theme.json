@@ -1,0 +1,818 @@
+{
+  "id": "vn.zsoft.theme.default",
+  "name": "Z Default",
+  "version": "1.2.0",
+  "kind": "theme",
+  "description": "The default Z-CMS theme: a warm, product-led portal for open-source projects, products and company sites. English, Japanese and Vietnamese, with dark and light modes.",
+  "author": {
+    "name": "Z-SOFT Co., Ltd.",
+    "url": "https://z-soft.com.vn"
+  },
+  "engine": ">=0.1.0",
+  "entry": "dist/index.mjs",
+  "styles": "dist/theme.css",
+  "templates": [
+    "home",
+    "page",
+    "post",
+    "archive",
+    "notFound",
+    "error"
+  ],
+  "optionalCapabilities": [
+    "ai.assistant"
+  ],
+  "integrationSlots": [
+    "floating"
+  ],
+  "menuLocations": [
+    {
+      "key": "primary",
+      "name": "Primary menu"
+    },
+    {
+      "key": "footer",
+      "name": "Footer menu"
+    }
+  ],
+  "colorModes": {
+    "supports": [
+      "light",
+      "dark"
+    ],
+    "default": "system"
+  },
+  "collections": {
+    "latest": {
+      "contentType": "post",
+      "limit": 3,
+      "sort": "newest"
+    }
+  },
+  "media": {
+    "screenshots": [
+      "screenshots/1-home-light.png",
+      "screenshots/2-home-dark.png",
+      "screenshots/3-article.png"
+    ]
+  },
+  "seo": {
+    "titleTemplate": "%s — %site%",
+    "robots": {
+      "index": true,
+      "follow": true
+    },
+    "icons": {
+      "favicon": "assets/favicon.ico",
+      "icon": "assets/icon.png",
+      "appleTouchIcon": "assets/apple-touch-icon.png",
+      "themeColor": "#FA5600"
+    },
+    "organization": {
+      "name": "Z-CMS"
+    }
+  },
+  "settingsSchema": {
+    "type": "object",
+    "properties": {
+      "primaryColor": {
+        "type": "string",
+        "title": "Primary colour",
+        "description": "Leave empty to use the site's brand colour.",
+        "format": "color",
+        "default": "#FA5600"
+      },
+      "siteTitle": {
+        "type": "string",
+        "title": "Site title",
+        "default": "Z-CMS"
+      },
+      "logo": {
+        "type": "string",
+        "title": "Logo",
+        "description": "Shown in the header. Leave empty to use the site's logo, or the Z wordmark this theme ships.",
+        "format": "image",
+        "default": ""
+      },
+      "tagline": {
+        "type": "string",
+        "title": "Tagline",
+        "default": "Open source. Developer first."
+      },
+      "metaDescription": {
+        "type": "string",
+        "title": "Meta description",
+        "description": "Used for pages that have no description of their own. Around 150–160 characters.",
+        "format": "textarea",
+        "default": "Z-CMS is a modern open-source CMS platform built with Next.js, NestJS, PostgreSQL and Redis."
+      },
+      "announcement": {
+        "type": "string",
+        "title": "Announcement bar",
+        "description": "The strip above the header. Leave empty to hide it.",
+        "default": "Z-CMS is being built in the open on GitHub."
+      },
+      "githubUrl": {
+        "type": "string",
+        "title": "GitHub URL",
+        "format": "url",
+        "default": "https://github.com/zscontributor/z-cms"
+      },
+      "docsUrl": {
+        "type": "string",
+        "title": "Documentation URL",
+        "format": "url",
+        "default": "https://docs.z-cms.org"
+      },
+      "downloadUrl": {
+        "type": "string",
+        "title": "Download URL",
+        "description": "Where the hero and footer buttons point. Falls back to the GitHub URL when empty.",
+        "format": "url",
+        "default": "https://github.com/zscontributor/z-cms/releases"
+      },
+      "colorMode": {
+        "type": "string",
+        "title": "Default colour mode",
+        "description": "Where a first-time visitor starts. \"System\" follows their device. Either way, a visitor who uses the switch keeps their own choice.",
+        "enum": [
+          "system",
+          "light",
+          "dark"
+        ],
+        "default": "system"
+      },
+      "showSearch": {
+        "type": "boolean",
+        "title": "Show search box",
+        "default": true
+      },
+      "footerText": {
+        "type": "string",
+        "title": "Footer text",
+        "default": "© 2026 Z-SOFT Co., Ltd. Released under GPL-2.0-or-later."
+      },
+      "ogImage": {
+        "type": "string",
+        "title": "Social share image",
+        "description": "Shown when a page with no image of its own is shared.",
+        "format": "image",
+        "default": ""
+      },
+      "favicon": {
+        "type": "string",
+        "title": "Favicon",
+        "description": "Browser tab icon. An .ico, .png or .svg.",
+        "format": "image",
+        "default": ""
+      },
+      "twitterSite": {
+        "type": "string",
+        "title": "X / Twitter handle",
+        "description": "Including the @, e.g. @zsoft.",
+        "default": ""
+      },
+      "noindex": {
+        "type": "boolean",
+        "title": "Discourage search engines",
+        "description": "Turn on for a staging site. No individual page can override this.",
+        "default": false
+      },
+      "organizationName": {
+        "type": "string",
+        "title": "Organisation name",
+        "default": "Z-SOFT Co., Ltd."
+      },
+      "organizationUrl": {
+        "type": "string",
+        "title": "Organisation website",
+        "format": "url",
+        "default": "https://z-soft.com.vn"
+      },
+      "organizationLogo": {
+        "type": "string",
+        "title": "Organisation logo",
+        "description": "Used in search results. A square image reads best.",
+        "format": "image",
+        "default": ""
+      },
+      "socialProfiles": {
+        "type": "string",
+        "title": "Social profiles",
+        "description": "One URL per line. Confirms to search engines that these profiles are the same organisation.",
+        "format": "textarea",
+        "default": ""
+      }
+    }
+  },
+  "demo": {
+    "settings": {
+      "siteTitle": "Z-CMS",
+      "tagline": "Open source. Developer first.",
+      "announcement": "Z-CMS is being built in the open on GitHub.",
+      "githubUrl": "https://github.com/zscontributor/z-cms",
+      "docsUrl": "https://docs.z-cms.org",
+      "downloadUrl": "https://github.com/zscontributor/z-cms/releases"
+    },
+    "contentTypes": [
+      {
+        "key": "page",
+        "name": "Page",
+        "pluralName": "Pages",
+        "routePrefix": "",
+        "hasBlocks": true,
+        "icon": "file-text",
+        "fields": []
+      },
+      {
+        "key": "post",
+        "name": "Post",
+        "pluralName": "Posts",
+        "routePrefix": "blog",
+        "hasBlocks": true,
+        "icon": "newspaper",
+        "fields": [
+          {
+            "key": "readingTime",
+            "type": "number",
+            "label": "Reading time",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "contents": [
+      {
+        "contentType": "page",
+        "locale": "en",
+        "slug": "",
+        "title": "Welcome to Z-CMS",
+        "translationGroup": "default-home",
+        "excerpt": "A modern open-source CMS platform, built with Next.js, NestJS, PostgreSQL and Redis.",
+        "seo": {
+          "title": "Z-CMS — Open Source CMS Platform",
+          "description": "Z-CMS is a modern open-source CMS platform with a theme engine, a plugin marketplace and a developer-first architecture."
+        },
+        "blocks": [
+          {
+            "id": "home-welcome-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Welcome to Z-CMS</h2><p>You are looking at the <strong>Z Default</strong> theme, running on a real Z-CMS site. Everything below this line is ordinary content — pages, posts, menus and settings you can edit in the admin — while the landing sections above it are what the theme itself draws.</p><p>To carry on: read the <a href=\"https://docs.z-cms.org\">documentation</a>, browse the <a href=\"https://github.com/zscontributor/z-cms\">source on GitHub</a>, or open the Appearance screen and make this theme your own.</p>"
+            }
+          },
+          {
+            "id": "home-next-en",
+            "type": "core/features",
+            "props": {
+              "heading": "Three things worth doing first",
+              "items": [
+                {
+                  "title": "Edit this page",
+                  "body": "Content → Pages → Welcome to Z-CMS. Change a block and it appears straight away."
+                },
+                {
+                  "title": "Change the look",
+                  "body": "Appearance → Theme settings. Colour, logo, tagline and the announcement bar are settings, not code."
+                },
+                {
+                  "title": "Install a theme",
+                  "body": "Appearance → Marketplace. Every theme is signed, verified and installed without a redeploy."
+                }
+              ]
+            }
+          },
+          {
+            "id": "home-cta-en",
+            "type": "core/cta",
+            "props": {
+              "heading": "Read the documentation",
+              "body": "Installation, the Theme SDK, the Plugin SDK and the deployment guide.",
+              "ctaLabel": "docs.z-cms.org",
+              "ctaHref": "https://docs.z-cms.org"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "ja",
+        "slug": "",
+        "title": "Z-CMS へようこそ",
+        "translationGroup": "default-home",
+        "excerpt": "Next.js・NestJS・PostgreSQL・Redis で構築された、モダンなオープンソース CMS 基盤。",
+        "seo": {
+          "title": "Z-CMS — オープンソース CMS プラットフォーム",
+          "description": "Z-CMS は、テーマエンジンとプラグインマーケットプレイスを備えた、開発者第一のモダンなオープンソース CMS です。"
+        },
+        "blocks": [
+          {
+            "id": "home-welcome-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Z-CMS へようこそ</h2><p>ご覧いただいているのは、実際の Z-CMS サイトで動作している <strong>Z Default</strong> テーマです。この行から下は管理画面で編集できる通常のコンテンツ（ページ・記事・メニュー・設定）で、上のランディング部分はテーマ自身が描画しています。</p><p>次のステップ: <a href=\"https://docs.z-cms.org\">ドキュメント</a>を読む、<a href=\"https://github.com/zscontributor/z-cms\">GitHub のソース</a>を見る、あるいは「外観」画面からこのテーマを自分のものにする。</p>"
+            }
+          },
+          {
+            "id": "home-next-ja",
+            "type": "core/features",
+            "props": {
+              "heading": "まず試したい 3 つのこと",
+              "items": [
+                {
+                  "title": "このページを編集する",
+                  "body": "コンテンツ → ページ → Z-CMS へようこそ。ブロックを変更すると即座に反映されます。"
+                },
+                {
+                  "title": "見た目を変える",
+                  "body": "外観 → テーマ設定。色・ロゴ・タグライン・お知らせバーはすべて設定であり、コードではありません。"
+                },
+                {
+                  "title": "テーマを追加する",
+                  "body": "外観 → マーケットプレイス。すべてのテーマは署名・検証済みで、再デプロイなしにインストールできます。"
+                }
+              ]
+            }
+          },
+          {
+            "id": "home-cta-ja",
+            "type": "core/cta",
+            "props": {
+              "heading": "ドキュメントを読む",
+              "body": "インストール、Theme SDK、Plugin SDK、デプロイガイド。",
+              "ctaLabel": "docs.z-cms.org",
+              "ctaHref": "https://docs.z-cms.org"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "vi",
+        "slug": "",
+        "title": "Chào mừng đến với Z-CMS",
+        "translationGroup": "default-home",
+        "excerpt": "Nền tảng CMS mã nguồn mở hiện đại, xây trên Next.js, NestJS, PostgreSQL và Redis.",
+        "seo": {
+          "title": "Z-CMS — Nền tảng CMS mã nguồn mở",
+          "description": "Z-CMS là nền tảng CMS mã nguồn mở hiện đại với theme engine, plugin marketplace và kiến trúc dành cho developer."
+        },
+        "blocks": [
+          {
+            "id": "home-welcome-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Chào mừng đến với Z-CMS</h2><p>Bạn đang xem theme <strong>Z Default</strong> chạy trên một site Z-CMS thật. Mọi thứ bên dưới dòng này là nội dung thông thường — trang, bài viết, menu và cấu hình bạn có thể sửa trong trang quản trị — còn các phần landing phía trên là do chính theme vẽ ra.</p><p>Tiếp theo: đọc <a href=\"https://docs.z-cms.org\">tài liệu</a>, xem <a href=\"https://github.com/zscontributor/z-cms\">mã nguồn trên GitHub</a>, hoặc mở màn hình Giao diện để tùy biến theme theo ý bạn.</p>"
+            }
+          },
+          {
+            "id": "home-next-vi",
+            "type": "core/features",
+            "props": {
+              "heading": "Ba việc nên làm đầu tiên",
+              "items": [
+                {
+                  "title": "Sửa trang này",
+                  "body": "Nội dung → Trang → Chào mừng đến với Z-CMS. Sửa block nào là thấy ngay block đó."
+                },
+                {
+                  "title": "Đổi giao diện",
+                  "body": "Giao diện → Cấu hình theme. Màu, logo, tagline và thanh thông báo đều là cấu hình, không phải code."
+                },
+                {
+                  "title": "Cài thêm theme",
+                  "body": "Giao diện → Marketplace. Mọi theme đều được ký, xác minh và cài đặt mà không cần deploy lại."
+                }
+              ]
+            }
+          },
+          {
+            "id": "home-cta-vi",
+            "type": "core/cta",
+            "props": {
+              "heading": "Đọc tài liệu",
+              "body": "Hướng dẫn cài đặt, Theme SDK, Plugin SDK và tài liệu triển khai.",
+              "ctaLabel": "docs.z-cms.org",
+              "ctaHref": "https://docs.z-cms.org"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "en",
+        "slug": "about",
+        "title": "About Z-CMS",
+        "translationGroup": "default-about",
+        "excerpt": "What Z-CMS is, who builds it, and why it exists.",
+        "blocks": [
+          {
+            "id": "about-body-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-CMS is an open-source content management platform built by <a href=\"https://z-soft.com.vn\">Z-SOFT</a> and released under GPL-2.0-or-later. It is for teams who want the editing experience of a traditional CMS without giving up a modern stack — or their independence.</p><h2>Why another CMS</h2><p>Most content platforms make you choose. Either you get a friendly admin and an ecosystem of themes and plugins, but the architecture underneath is twenty years old; or you get a clean headless API on a modern stack, but every content change now goes through a developer.</p><p>Z-CMS refuses the choice. Editors get a block-based page builder, a marketplace, and a theme they can configure without touching code. Developers get TypeScript from top to bottom, a signed package system, a sandboxed plugin runtime, and an API they can build anything on.</p><h2>The architecture</h2><p>Next.js renders the public site and the admin. NestJS serves the API. PostgreSQL stores the content, with row-level isolation between tenants. Redis carries the cache and the job queue. Themes and plugins are signed packages the runtime verifies before it will load them.</p><h2>Open, and staying open</h2><p>Development happens in the open on <a href=\"https://github.com/zscontributor/z-cms\">GitHub</a>: the roadmap, the issues, the discussions and every line of code. Contributions are welcome — and so is a fork.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "ja",
+        "slug": "about",
+        "title": "Z-CMS について",
+        "translationGroup": "default-about",
+        "excerpt": "Z-CMS とは何か、誰が作っているのか、なぜ存在するのか。",
+        "blocks": [
+          {
+            "id": "about-body-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-CMS は <a href=\"https://z-soft.com.vn\">Z-SOFT</a> が開発し、GPL-2.0-or-later で公開しているオープンソースのコンテンツ管理基盤です。従来の CMS の編集しやすさを保ちながら、モダンな技術スタックと独立性を手放したくないチームのために作られています。</p><h2>なぜ新しい CMS なのか</h2><p>多くのプラットフォームは二者択一を迫ります。使いやすい管理画面とテーマ・プラグインの生態系はあるが土台のアーキテクチャは 20 年前のもの。あるいはモダンな構成のヘッドレス API はあるが、コンテンツを変えるたびに開発者の手が必要になる。</p><p>Z-CMS はその選択を拒みます。編集者にはブロックベースのページビルダー、マーケットプレイス、コードに触れずに設定できるテーマを。開発者には全面的な TypeScript、署名付きパッケージ、サンドボックス化されたプラグイン実行環境、そして何でも作れる API を。</p><h2>アーキテクチャ</h2><p>公開サイトと管理画面は Next.js、API は NestJS。コンテンツは PostgreSQL に保存され、テナント間は行単位で分離されます。キャッシュとジョブキューは Redis。テーマとプラグインは署名付きパッケージであり、ランタイムは検証に成功したものだけを読み込みます。</p><h2>オープンであり続ける</h2><p>ロードマップ、イシュー、議論、そしてすべてのコードが <a href=\"https://github.com/zscontributor/z-cms\">GitHub</a> で公開されています。コントリビュートも、フォークも歓迎です。</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "vi",
+        "slug": "gioi-thieu",
+        "title": "Giới thiệu về Z-CMS",
+        "translationGroup": "default-about",
+        "excerpt": "Z-CMS là gì, ai xây dựng, và vì sao nó tồn tại.",
+        "blocks": [
+          {
+            "id": "about-body-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-CMS là nền tảng quản trị nội dung mã nguồn mở do <a href=\"https://z-soft.com.vn\">Z-SOFT</a> phát triển và phát hành theo giấy phép GPL-2.0-or-later. Nó dành cho những đội ngũ muốn giữ trải nghiệm biên tập quen thuộc của một CMS truyền thống mà không phải đánh đổi kiến trúc hiện đại — hay sự độc lập của mình.</p><h2>Vì sao lại thêm một CMS nữa</h2><p>Phần lớn nền tảng nội dung bắt bạn phải chọn. Hoặc là trang quản trị dễ dùng cùng hệ sinh thái theme và plugin, nhưng kiến trúc bên dưới đã hai mươi năm tuổi; hoặc là API headless gọn gàng trên nền công nghệ mới, nhưng mỗi lần đổi nội dung lại phải nhờ tới developer.</p><p>Z-CMS từ chối phải chọn. Người biên tập có page builder theo block, có marketplace, có theme cấu hình được mà không cần đụng tới code. Developer có TypeScript xuyên suốt, hệ thống package có chữ ký, plugin chạy trong sandbox, và một API đủ để xây bất cứ thứ gì.</p><h2>Kiến trúc</h2><p>Next.js render site công khai và trang quản trị. NestJS phục vụ API. PostgreSQL lưu nội dung, cô lập giữa các tenant ở mức từng dòng dữ liệu. Redis đảm nhiệm cache và job queue. Theme và plugin là các package có chữ ký số mà runtime phải xác minh trước khi nạp.</p><h2>Mở, và tiếp tục mở</h2><p>Mọi thứ diễn ra công khai trên <a href=\"https://github.com/zscontributor/z-cms\">GitHub</a>: roadmap, issue, thảo luận và từng dòng code. Chúng tôi hoan nghênh đóng góp — và cả việc bạn fork dự án.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "en",
+        "slug": "features",
+        "title": "Features",
+        "translationGroup": "default-features",
+        "excerpt": "The page builder, the theme engine, the plugin SDK and the headless API.",
+        "blocks": [
+          {
+            "id": "features-body-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Content</h2><p>Pages and posts are built from <strong>blocks</strong>: structured data, not a blob of HTML. That is what lets the same content render in a different theme, in a mobile app, or through the API without being rewritten. Content types, fields and routes are configured in the admin, and every piece of content can exist in as many languages as the site publishes in.</p><h2>Themes</h2><p>A theme is an independent, signed package. It declares its templates, its menu locations and a settings schema — and the admin builds the settings form from that schema, so a theme can add an option without any change to the CMS. Themes render on the server and ship no client JavaScript, which is what makes it safe to install one you did not write.</p><h2>Plugins</h2><p>Plugins extend content types, APIs, admin screens, background jobs and front-end blocks through one standard SDK. They declare the permissions they need, run in a sandbox, and are verified before they load. The core is never patched.</p><h2>Operations</h2><p>Multi-tenancy with row-level isolation, RBAC, audit logs, a Redis-backed cache and job queue, object storage for media, and a deployment story that fits a single VPS or a cluster.</p>"
+            }
+          },
+          {
+            "id": "features-cta-en",
+            "type": "core/cta",
+            "props": {
+              "heading": "See it in the docs",
+              "body": "Every feature here has a page explaining how to use it.",
+              "ctaLabel": "Read the documentation",
+              "ctaHref": "https://docs.z-cms.org"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "ja",
+        "slug": "features",
+        "title": "機能",
+        "translationGroup": "default-features",
+        "excerpt": "ページビルダー、テーマエンジン、プラグイン SDK、そしてヘッドレス API。",
+        "blocks": [
+          {
+            "id": "features-body-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>コンテンツ</h2><p>ページと記事は <strong>ブロック</strong> から構成されます。HTML の塊ではなく構造化データであることが、同じコンテンツを別のテーマでも、モバイルアプリでも、API 経由でも、書き直さずに表示できる理由です。コンテンツタイプ・フィールド・ルートは管理画面で設定でき、サイトが公開するすべての言語でコンテンツを持てます。</p><h2>テーマ</h2><p>テーマは独立した署名付きパッケージです。テンプレート、メニュー位置、設定スキーマを宣言し、管理画面はそのスキーマから設定フォームを生成します。つまり CMS 本体を変更せずにテーマが選択肢を追加できます。テーマはサーバー上で描画され、クライアント JavaScript を一切送りません。自分が書いていないテーマを安全にインストールできるのはそのためです。</p><h2>プラグイン</h2><p>プラグインは標準 SDK を通じて、コンテンツタイプ・API・管理画面・バックグラウンドジョブ・フロントエンドのブロックを拡張します。必要な権限を宣言し、サンドボックスで動作し、読み込み前に検証されます。コアに手を加えることはありません。</p><h2>運用</h2><p>行単位で分離されたマルチテナント、RBAC、監査ログ、Redis によるキャッシュとジョブキュー、メディア用のオブジェクトストレージ。VPS 1 台でもクラスタでも運用できます。</p>"
+            }
+          },
+          {
+            "id": "features-cta-ja",
+            "type": "core/cta",
+            "props": {
+              "heading": "ドキュメントで詳しく",
+              "body": "ここにあるすべての機能に、使い方を説明したページがあります。",
+              "ctaLabel": "ドキュメントを読む",
+              "ctaHref": "https://docs.z-cms.org"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "vi",
+        "slug": "tinh-nang",
+        "title": "Tính năng",
+        "translationGroup": "default-features",
+        "excerpt": "Page builder, theme engine, plugin SDK và headless API.",
+        "blocks": [
+          {
+            "id": "features-body-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Nội dung</h2><p>Trang và bài viết được dựng từ các <strong>block</strong>: dữ liệu có cấu trúc, không phải một khối HTML. Chính điều đó cho phép cùng một nội dung hiển thị trên theme khác, trên ứng dụng di động, hay qua API mà không phải viết lại. Content type, field và route đều cấu hình trong trang quản trị, và mỗi nội dung có thể tồn tại ở tất cả các ngôn ngữ mà site xuất bản.</p><h2>Theme</h2><p>Theme là một package độc lập, có chữ ký số. Nó khai báo template, vị trí menu và settings schema — trang quản trị dựng form cấu hình thẳng từ schema đó, nên theme thêm tùy chọn mới mà không cần sửa CMS. Theme render trên server và không gửi JavaScript nào xuống trình duyệt; đó là lý do bạn có thể yên tâm cài một theme mình không tự viết.</p><h2>Plugin</h2><p>Plugin mở rộng content type, API, màn hình quản trị, background job và block frontend thông qua một SDK chuẩn hóa. Chúng khai báo quyền cần dùng, chạy trong sandbox và được xác minh trước khi nạp. CMS Core không bao giờ bị sửa.</p><h2>Vận hành</h2><p>Multi-tenant với cô lập ở mức dòng dữ liệu, RBAC, audit log, cache và job queue trên Redis, object storage cho media, và phương án triển khai vừa vặn từ một VPS đơn lẻ tới cả một cụm máy chủ.</p>"
+            }
+          },
+          {
+            "id": "features-cta-vi",
+            "type": "core/cta",
+            "props": {
+              "heading": "Xem chi tiết trong tài liệu",
+              "body": "Mỗi tính năng ở đây đều có một trang hướng dẫn cách sử dụng.",
+              "ctaLabel": "Đọc tài liệu",
+              "ctaHref": "https://docs.z-cms.org"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "en",
+        "slug": "get-started",
+        "title": "Get started",
+        "translationGroup": "default-start",
+        "excerpt": "Install Z-CMS, run it locally, and publish your first page.",
+        "blocks": [
+          {
+            "id": "start-body-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Run it locally</h2><p>Clone the repository, install the dependencies and bring the infrastructure up. Node 22 and Docker are the only prerequisites.</p><p><code>git clone https://github.com/zscontributor/z-cms</code></p><p><code>pnpm bootstrap &amp;&amp; pnpm dev</code></p><p>The admin comes up on port 3300, the public site on 3000. The seed creates a first tenant with this theme already active — which is how you got here.</p><h2>Then</h2><p>Open <strong>Content → Pages</strong> and edit the page you are reading. Open <strong>Appearance</strong> to change the colour, the logo and the announcement bar. Open <strong>Marketplace</strong> to install a different theme: it is fetched, its signature is checked against a key pinned in the runtime, and it is live without a redeploy.</p><h2>Going further</h2><p>The <a href=\"https://docs.z-cms.org\">documentation</a> covers deployment, the Theme SDK, the Plugin SDK and the API. The <a href=\"https://github.com/zscontributor/z-cms\">repository</a> has the roadmap and the issues — and a good first issue is a good place to start.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "ja",
+        "slug": "get-started",
+        "title": "はじめかた",
+        "translationGroup": "default-start",
+        "excerpt": "Z-CMS をインストールし、ローカルで動かし、最初のページを公開する。",
+        "blocks": [
+          {
+            "id": "start-body-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>ローカルで動かす</h2><p>リポジトリをクローンし、依存関係をインストールし、インフラを起動します。必要なのは Node 22 と Docker だけです。</p><p><code>git clone https://github.com/zscontributor/z-cms</code></p><p><code>pnpm bootstrap &amp;&amp; pnpm dev</code></p><p>管理画面はポート 3300、公開サイトは 3000 で起動します。シードによって、このテーマがすでに有効な最初のテナントが作られます。いまご覧になっているのがそれです。</p><h2>次に</h2><p><strong>コンテンツ → ページ</strong> を開き、いま読んでいるこのページを編集してみてください。<strong>外観</strong> では色・ロゴ・お知らせバーを変更できます。<strong>マーケットプレイス</strong> から別のテーマをインストールすると、パッケージが取得され、ランタイムに固定された鍵で署名が検証され、再デプロイなしで反映されます。</p><h2>さらに先へ</h2><p><a href=\"https://docs.z-cms.org\">ドキュメント</a>ではデプロイ、Theme SDK、Plugin SDK、API を扱っています。<a href=\"https://github.com/zscontributor/z-cms\">リポジトリ</a>にはロードマップとイシューがあります。good first issue から始めるのがおすすめです。</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "vi",
+        "slug": "bat-dau",
+        "title": "Bắt đầu",
+        "translationGroup": "default-start",
+        "excerpt": "Cài Z-CMS, chạy thử trên máy, và xuất bản trang đầu tiên.",
+        "blocks": [
+          {
+            "id": "start-body-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Chạy trên máy của bạn</h2><p>Clone repository, cài dependency và khởi động hạ tầng. Bạn chỉ cần Node 22 và Docker.</p><p><code>git clone https://github.com/zscontributor/z-cms</code></p><p><code>pnpm bootstrap &amp;&amp; pnpm dev</code></p><p>Trang quản trị chạy ở cổng 3300, site công khai ở cổng 3000. Dữ liệu seed tạo sẵn một tenant đầu tiên với theme này đang active — chính là trang bạn đang xem.</p><h2>Sau đó</h2><p>Mở <strong>Nội dung → Trang</strong> và sửa thử chính trang này. Mở <strong>Giao diện</strong> để đổi màu, logo và thanh thông báo. Mở <strong>Marketplace</strong> để cài một theme khác: hệ thống tải package về, kiểm tra chữ ký bằng khóa được ghim sẵn trong runtime, và theme mới hoạt động ngay mà không cần deploy lại.</p><h2>Đi xa hơn</h2><p><a href=\"https://docs.z-cms.org\">Tài liệu</a> hướng dẫn triển khai, Theme SDK, Plugin SDK và API. <a href=\"https://github.com/zscontributor/z-cms\">Repository</a> có roadmap và danh sách issue — một issue gắn nhãn good first issue là chỗ bắt đầu rất tốt.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "en",
+        "slug": "why-themes-are-signed-packages",
+        "title": "Why Z-CMS themes are signed packages",
+        "translationGroup": "default-post-1",
+        "excerpt": "Installing a theme means running someone else's code on your site. Here is what Z-CMS does about that.",
+        "data": {
+          "readingTime": 4
+        },
+        "blocks": [
+          {
+            "id": "post1-body-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>\"Install a theme\" is a friendly phrase for something quite serious: downloading code from the internet and running it on your server, inside your site, with access to your content.</p><p>Z-CMS treats a theme as what it is — a package — and makes it prove three things before it will load.</p><h2>It has not been tampered with</h2><p>A package carries the SHA-256 checksum of its own payload. The runtime hashes the bytes it actually received and compares the two. A single flipped byte and the package is refused.</p><h2>Somebody signed it</h2><p>The author signs that checksum with an Ed25519 key that never leaves their machine. The marketplace verifies the signature against the public key it holds on record for that publisher — not the key bundled inside the package, which would be like checking a passport against the photo printed in it.</p><h2>The marketplace let it in</h2><p>Once a package is accepted — scanned, reviewed, approved — the marketplace counter-signs it. The runtime verifies <em>that</em> signature against a key pinned in its own configuration. A package nobody at Z-SOFT has ever seen does not run, however well its author signed it.</p><p>And when something does go wrong, a signed revocation list is the kill switch: the version disappears from the catalogue, every runtime drops it, and the site falls back to the default theme rather than going down.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "ja",
+        "slug": "why-themes-are-signed-packages",
+        "title": "Z-CMS のテーマが署名付きパッケージである理由",
+        "translationGroup": "default-post-1",
+        "excerpt": "テーマのインストールとは、他人のコードを自分のサイトで動かすこと。Z-CMS はそれにどう向き合っているか。",
+        "data": {
+          "readingTime": 4
+        },
+        "blocks": [
+          {
+            "id": "post1-body-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>「テーマをインストールする」という言い回しは親しみやすいものですが、実際に起きているのは、インターネットからコードをダウンロードし、自分のサーバーで、自分のサイトの中で、自分のコンテンツにアクセスできる状態で実行する、ということです。</p><p>Z-CMS はテーマをありのまま — ひとつのパッケージとして — 扱い、読み込む前に 3 つのことを証明させます。</p><h2>改ざんされていないこと</h2><p>パッケージは自身のペイロードの SHA-256 チェックサムを持ちます。ランタイムは実際に受け取ったバイト列をハッシュ化して比較します。1 バイトでも違えば読み込みは拒否されます。</p><h2>誰かが署名したこと</h2><p>作者は、手元から出ることのない Ed25519 の鍵でそのチェックサムに署名します。マーケットプレイスは、その発行者について記録している公開鍵で検証します。パッケージに同梱された鍵ではありません。それでは、パスポートを中に印刷された写真と照合するようなものだからです。</p><h2>マーケットプレイスが受け入れたこと</h2><p>スキャンされ、レビューされ、承認されたパッケージには、マーケットプレイスが副署名を付けます。ランタイムは<em>その</em>署名を、自身の設定に固定された鍵で検証します。Z-SOFT の誰も見たことのないパッケージは、作者がどれほど正しく署名していても動きません。</p><p>そして問題が起きたときは、署名付きの失効リストが緊急停止装置になります。該当バージョンはカタログから消え、すべてのランタイムがそれを破棄し、サイトは停止せずデフォルトテーマにフォールバックします。</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "vi",
+        "slug": "vi-sao-theme-can-chu-ky-so",
+        "title": "Vì sao theme của Z-CMS là package có chữ ký số",
+        "translationGroup": "default-post-1",
+        "excerpt": "Cài một theme nghĩa là chạy code của người khác trên site của bạn. Đây là cách Z-CMS xử lý chuyện đó.",
+        "data": {
+          "readingTime": 4
+        },
+        "blocks": [
+          {
+            "id": "post1-body-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>\"Cài một theme\" nghe rất nhẹ nhàng, nhưng thực chất là: tải code từ Internet về, chạy nó trên máy chủ của bạn, bên trong site của bạn, với quyền truy cập nội dung của bạn.</p><p>Z-CMS coi theme đúng như bản chất của nó — một package — và bắt nó chứng minh ba điều trước khi được nạp.</p><h2>Nó chưa bị sửa đổi</h2><p>Mỗi package mang theo checksum SHA-256 của chính phần payload của nó. Runtime băm đúng những byte nó thực sự nhận được rồi đem so sánh. Chỉ cần sai một byte là package bị từ chối.</p><h2>Có người đã ký nó</h2><p>Tác giả ký checksum đó bằng khóa Ed25519 không bao giờ rời khỏi máy của họ. Marketplace xác minh chữ ký bằng khóa công khai đã lưu cho publisher đó — chứ không phải khóa nằm trong package, vì làm vậy chẳng khác nào kiểm tra hộ chiếu bằng chính tấm ảnh in trong hộ chiếu.</p><h2>Marketplace đã chấp nhận nó</h2><p>Khi một package được chấp nhận — quét mã độc, duyệt, phê duyệt — marketplace ký thêm chữ ký thứ hai lên nó. Runtime xác minh <em>chữ ký đó</em> bằng khóa được ghim trong chính cấu hình của mình. Một package chưa ai ở Z-SOFT nhìn thấy thì không chạy, dù tác giả có ký chuẩn đến đâu.</p><p>Và khi có sự cố, danh sách thu hồi (có chữ ký) chính là công tắc ngắt: phiên bản đó biến mất khỏi catalogue, mọi runtime gỡ nó xuống, và site quay về theme mặc định thay vì sập.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "en",
+        "slug": "themes-render-on-the-server",
+        "title": "Why Z-CMS themes render on the server",
+        "translationGroup": "default-post-2",
+        "excerpt": "A theme you did not write should not run in your visitors' browsers. Here is what that buys, and what it costs.",
+        "data": {
+          "readingTime": 5
+        },
+        "blocks": [
+          {
+            "id": "default-post-2-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>A Z-CMS theme ships no client JavaScript. It renders on the server, hands back HTML, and that is the end of its involvement with the visitor.</p><h2>What it buys</h2><p>Installing a theme from the marketplace means running a stranger's code. On the server it runs in one place we control, with no access to a reader's session, their clipboard or their keystrokes. A theme cannot exfiltrate anything, because it never reaches the browser.</p><h2>What it costs</h2><p>Everything interactive has to be built out of HTML the browser already knows: the language switcher is a <code>&lt;details&gt;</code> disclosure, search is a form, \"back to top\" is a link. The dark-mode toggle is the exception that proves the rule — it genuinely cannot be done without JavaScript, so the <em>runtime</em> owns it and the theme only says where the button goes.</p><p>That constraint is a feature. A theme that cannot ship JavaScript cannot ship a tracker.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "ja",
+        "slug": "themes-render-on-the-server",
+        "title": "Z-CMS のテーマがサーバーで描画される理由",
+        "translationGroup": "default-post-2",
+        "excerpt": "自分が書いていないテーマを、読者のブラウザで動かすべきではありません。その利点と代償。",
+        "data": {
+          "readingTime": 5
+        },
+        "blocks": [
+          {
+            "id": "default-post-2-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-CMS のテーマはクライアント JavaScript を一切送りません。サーバーで描画し、HTML を返し、そこで訪問者との関わりは終わります。</p><h2>得られるもの</h2><p>マーケットプレイスからテーマを入れるとは、他人のコードを実行することです。サーバー上でなら、我々が管理する場所で動き、読者のセッションやキー入力には触れられません。ブラウザに届かないコードは、何も持ち出せません。</p><h2>代償</h2><p>対話的なものはすべて、ブラウザが元から知っている HTML で作る必要があります。言語切替は <code>&lt;details&gt;</code>、検索はフォーム、「上へ戻る」はリンクです。ダークモードの切替だけは例外で、JavaScript なしでは成立しません。だからこそ<em>ランタイム</em>がそれを担い、テーマはボタンの位置だけを決めます。</p><p>この制約は機能です。JavaScript を送れないテーマは、トラッカーも送れません。</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "vi",
+        "slug": "theme-render-tren-server",
+        "title": "Vì sao theme Z-CMS render trên server",
+        "translationGroup": "default-post-2",
+        "excerpt": "Một theme bạn không tự viết thì không nên chạy trong trình duyệt của độc giả. Được gì và mất gì.",
+        "data": {
+          "readingTime": 5
+        },
+        "blocks": [
+          {
+            "id": "default-post-2-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Theme Z-CMS không gửi một dòng JavaScript nào xuống trình duyệt. Nó render trên server, trả về HTML, và kết thúc quan hệ với người truy cập ở đó.</p><h2>Được gì</h2><p>Cài một theme từ marketplace nghĩa là chạy code của người lạ. Chạy trên server thì nó nằm trong một chỗ ta kiểm soát, không chạm được vào phiên đăng nhập, clipboard hay phím gõ của độc giả. Code không tới được trình duyệt thì không mang được gì ra ngoài.</p><h2>Mất gì</h2><p>Mọi thứ tương tác phải dựng bằng HTML mà trình duyệt vốn đã hiểu: chuyển ngôn ngữ là <code>&lt;details&gt;</code>, tìm kiếm là form, \"lên đầu trang\" là một cái link. Nút dark mode là ngoại lệ chứng minh quy tắc — nó thực sự không thể làm nếu không có JavaScript, nên <em>runtime</em> đảm nhiệm, còn theme chỉ nói nút đặt ở đâu.</p><p>Ràng buộc đó là một tính năng. Theme không gửi được JavaScript thì cũng không gửi được tracker.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "en",
+        "slug": "content-is-data-not-html",
+        "title": "Content is data, not HTML",
+        "translationGroup": "default-post-3",
+        "excerpt": "A page stored as a blob of markup is a page you can only ever render one way.",
+        "data": {
+          "readingTime": 3
+        },
+        "blocks": [
+          {
+            "id": "default-post-3-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>A Z-CMS page is a list of <strong>blocks</strong>: each one a type and some JSON props. It is not a string of HTML.</p><p>That distinction is what lets the same page render in a different theme without being rewritten, appear in a mobile app that has no notion of a <code>&lt;div&gt;</code>, and be queried — \"the six most recent posts\" — rather than merely displayed.</p><p>It is also what makes <code>core/content-list</code> possible: a block whose props are a <em>question</em> (\"six posts, newest first\") that the server answers while it builds the page. A blob of HTML cannot ask a question.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "ja",
+        "slug": "content-is-data-not-html",
+        "title": "コンテンツはデータであり、HTML ではない",
+        "translationGroup": "default-post-3",
+        "excerpt": "マークアップの塊として保存されたページは、一通りにしか表示できないページです。",
+        "data": {
+          "readingTime": 3
+        },
+        "blocks": [
+          {
+            "id": "default-post-3-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-CMS のページは <strong>ブロック</strong> のリストです。各ブロックは型と JSON のプロパティであり、HTML の文字列ではありません。</p><p>この違いがあるからこそ、同じページを別のテーマで書き直さずに表示でき、<code>&lt;div&gt;</code> を知らないモバイルアプリにも出せ、そして「最新の 6 件」のように<em>問い合わせる</em>ことができます。</p><p><code>core/content-list</code> が成り立つのも同じ理由です。プロパティが<em>問い</em>（「最新の記事を 6 件」）であり、サーバーがページ構築時にそれに答えます。HTML の塊は問いを立てられません。</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "post",
+        "locale": "vi",
+        "slug": "noi-dung-la-du-lieu-khong-phai-html",
+        "title": "Nội dung là dữ liệu, không phải HTML",
+        "translationGroup": "default-post-3",
+        "excerpt": "Một trang lưu dưới dạng khối markup là một trang chỉ hiển thị được đúng một kiểu.",
+        "data": {
+          "readingTime": 3
+        },
+        "blocks": [
+          {
+            "id": "default-post-3-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Một trang Z-CMS là một danh sách <strong>block</strong>: mỗi block gồm một kiểu và vài thuộc tính JSON. Nó không phải một chuỗi HTML.</p><p>Chính khác biệt đó cho phép cùng một trang hiển thị bằng theme khác mà không phải viết lại, xuất hiện trong ứng dụng di động vốn chẳng biết <code>&lt;div&gt;</code> là gì, và <em>truy vấn được</em> — \"sáu bài mới nhất\" — chứ không chỉ để trưng ra.</p><p>Đó cũng là thứ làm cho <code>core/content-list</code> khả thi: một block mà thuộc tính của nó là một <em>câu hỏi</em> (\"sáu bài, mới nhất trước\"), và server trả lời trong lúc dựng trang. Một khối HTML thì không đặt câu hỏi được.</p>"
+            }
+          }
+        ]
+      }
+    ],
+    "menus": [
+      {
+        "key": "primary",
+        "name": "Primary menu",
+        "items": [
+          {
+            "label": "About",
+            "url": "/about"
+          },
+          {
+            "label": "Features",
+            "url": "/features"
+          },
+          {
+            "label": "Get started",
+            "url": "/get-started"
+          },
+          {
+            "label": "Blog",
+            "url": "/blog"
+          },
+          {
+            "label": "Docs",
+            "url": "https://docs.z-cms.org",
+            "target": "_blank"
+          }
+        ]
+      },
+      {
+        "key": "footer",
+        "name": "Footer menu",
+        "items": [
+          {
+            "label": "About",
+            "url": "/about"
+          },
+          {
+            "label": "Get started",
+            "url": "/get-started"
+          },
+          {
+            "label": "Blog",
+            "url": "/blog"
+          },
+          {
+            "label": "GitHub",
+            "url": "https://github.com/zscontributor/z-cms",
+            "target": "_blank"
+          }
+        ]
+      }
+    ]
+  }
+}

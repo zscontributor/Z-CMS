@@ -1,0 +1,35 @@
+{
+  "metaTitle": "Appearance",
+  "title": "Appearance",
+  "description": "Activate a theme and adjust the settings it declares.",
+  "denied": "You do not have permission to view themes.",
+  "emptyTitle": "No theme installed",
+  "emptyDescription": "This site has no theme installed yet.",
+  "active": "In use",
+  "activate": "Activate",
+  "activating": "Activating…",
+  "available": "Available themes",
+  "settings": {
+    "heading": "Settings: {name}",
+    "generated": "This form is generated from the theme's settingsSchema.",
+    "empty": "This theme has no settings.",
+    "denied": "You do not have permission to configure themes.",
+    "saved": "Theme settings saved.",
+    "saveFailed": "Could not save the settings."
+  },
+  "demo": {
+    "seed": "Seed demo",
+    "reseed": "Reseed demo",
+    "seeding": "Seeding…",
+    "availableHint": "This active theme provides demo content. Seeding it will not touch your real content.",
+    "seededHint": "Demo content for this active theme has been seeded. You can reseed it safely.",
+    "seeded": "Seeded demo data: {content} content items and {menus} menus.",
+    "seedFailed": "Could not seed demo data.",
+    "denied": "You do not have permission to seed theme demo data."
+  },
+  "errors": {
+    "missingKey": "The theme key is missing.",
+    "activateDenied": "You do not have permission to activate a theme.",
+    "activateFailed": "Could not activate {name}."
+  }
+}

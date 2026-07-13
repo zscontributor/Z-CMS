@@ -136,6 +136,27 @@ jobs:
 
       - run: pnpm build
       - run: pnpm db:migrate
+
+      # A built-in only runs if it is signed, and the private half of the first-party
+      # key is not in the repo and must not be — so CI mints its own throwaway pair.
+      # A secret would not work either: a pull request from a fork cannot read one,
+      # and this job has to pass on a fork. The signing path is exercised end to end
+      # against a key nobody else holds, which is a better test than a shared key.
+      - name: Mint a CI-only first-party keypair
+        run: |
+          pnpm keygen:first-party --force
+          {
+            echo 'FIRST_PARTY_PUBLIC_KEY<<PEM'
+            cat keys/zsoft-publisher.pub.pem
+            echo 'PEM'
+          } >> "$GITHUB_ENV"
+
+      # db:seed reads the default theme out of the catalogue rather than transcribing
+      # the manifest, and the catalogue rows come from the SIGNED packages. So the
+      # built-ins have to be signed and registered before the seed, exactly as in
+      # `pnpm bootstrap`. Skip these and db:seed fails, by design.
+      - run: pnpm sign:builtins
+      - run: pnpm seed:builtins
       - run: pnpm db:seed
 
       # RLS · sandbox escape · package signing · malware scan · plugin tables.

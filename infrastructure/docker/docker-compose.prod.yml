@@ -155,6 +155,14 @@ services:
       SITE_RUNTIME_URL: ${SITE_RUNTIME_URL:-http://localhost:3000}
       # Behind a real proxy this must be the exact hop count, not "true".
       TRUST_PROXY: ${TRUST_PROXY:-1}
+      # Sideloading (install from file). All optional; blank = endpoints refuse uploads.
+      # OPERATOR_PUBLIC_KEY verifies uploads; OPERATOR_PRIVATE_KEY is set ONLY for the
+      # .zip path (cms-api signs) and makes a cms-api compromise code-exec in
+      # site-runtime — omit it to keep that boundary. ALLOW_THEME_SIDELOAD gates the
+      # unsandboxed theme case. See .env.example.
+      OPERATOR_PUBLIC_KEY: ${OPERATOR_PUBLIC_KEY:-}
+      OPERATOR_PRIVATE_KEY: ${OPERATOR_PRIVATE_KEY:-}
+      ALLOW_THEME_SIDELOAD: ${ALLOW_THEME_SIDELOAD:-false}
     depends_on:
       postgres:
         condition: service_healthy
@@ -273,7 +281,13 @@ services:
       # S3_ACCESS_KEY, S3_SECRET_KEY, REDIS_URL, SMTP_*, SEED_ADMIN_*.
       CMS_API_PUBLIC_URL: ${CMS_API_PUBLIC_URL:-}
       CMS_INTERNAL_TOKEN: ${SITE_RUNTIME_INTERNAL_TOKEN:-${CMS_INTERNAL_TOKEN:?set CMS_INTERNAL_TOKEN}}
-      MARKETPLACE_PUBLIC_KEY: ${MARKETPLACE_PUBLIC_KEY:?set MARKETPLACE_PUBLIC_KEY}
+      # Optional now, not `:?`. An air-gapped instance runs no marketplace, so it may
+      # have no key to pin; when empty, site-runtime simply refuses to load a
+      # marketplace theme (there are none) while built-ins and sideloads still work.
+      MARKETPLACE_PUBLIC_KEY: ${MARKETPLACE_PUBLIC_KEY:-}
+      # The pinned operator key for sideloaded themes — public half only; site-runtime
+      # verifies, never signs. Empty means no sideloaded theme loads. See .env.example.
+      OPERATOR_PUBLIC_KEY: ${OPERATOR_PUBLIC_KEY:-}
       S3_PUBLIC_URL: ${S3_PUBLIC_URL:?set S3_PUBLIC_URL}
     volumes:
       # The signed built-in themes. Read-only: site-runtime verifies them, it does not
@@ -315,6 +329,9 @@ services:
       # bytes in /plugins. Without this key the runtime refuses to run them, which
       # is why it is `:?` and not a default.
       FIRST_PARTY_PUBLIC_KEY: ${FIRST_PARTY_PUBLIC_KEY:?set FIRST_PARTY_PUBLIC_KEY — built-in plugins are verified against it}
+      # The pinned operator key for sideloaded plugins — public half only. Empty means
+      # no sideloaded plugin loads. (A plugin is sandboxed regardless of origin.)
+      OPERATOR_PUBLIC_KEY: ${OPERATOR_PUBLIC_KEY:-}
       CMS_API_URL: http://cms-api:4100
       CMS_INTERNAL_TOKEN: ${CMS_INTERNAL_TOKEN:?set CMS_INTERNAL_TOKEN in the environment}
     volumes:

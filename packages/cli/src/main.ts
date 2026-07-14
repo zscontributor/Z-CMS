@@ -63,6 +63,24 @@ zcms — the packaging tool for Z-CMS themes and plugins
   zcms verify <file.zcms> [--marketplace-key <public.pem>]
       Checks a package. Without --marketplace-key only the publisher signature is
       checked (enough to check your own work before submitting, NOT enough to install).
+
+  zcms help
+      Shows this text. Also: zcms (no command), zcms -h, zcms --help.
+
+Typical workflows
+  Build a distributable .zcms (the file you upload or submit):
+      zcms init ./my-theme --kind theme --id com.acme.theme.blog
+      cd my-theme && npm install && npm run build   # produces dist/
+      zcms keygen                                    # once — keep the private key safe
+      zcms pack ./my-theme --kind theme --key keys/private.pem --pub keys/public.pem
+      # -> com.acme.theme.blog-1.0.0.zcms
+
+  Sideload it into your OWN self-hosted instance (no marketplace):
+      zcms pack ./my-theme --kind theme --key op-private.pem --pub op-public.pem \\
+        --operator-key op-private.pem
+      # Upload the .zcms in Admin -> Appearance -> Install from file, then Approve.
+      # The instance must pin OPERATOR_PUBLIC_KEY (= op-public.pem); for themes it
+      # also needs ALLOW_THEME_SIDELOAD=true. See docs/distribution.md.
 `;
 
 function arg(name: string, argv: string[]): string | undefined {
@@ -363,7 +381,16 @@ async function main() {
       return packCmd(argv);
     case "verify":
       return verifyCmd(argv);
+    case "help":
+    case "-h":
+    case "--help":
+      console.log(USAGE);
+      return;
     default:
+      // An unknown command is a mistake worth naming, so the hint points at it
+      // rather than burying it under the whole usage text; no command at all just
+      // prints help and exits 0.
+      if (command) console.error(`Unknown command "${command}". Try: zcms help\n`);
       console.log(USAGE);
       process.exit(command ? 1 : 0);
   }

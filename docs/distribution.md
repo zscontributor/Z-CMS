@@ -198,6 +198,61 @@ Rotating the key means re-signing every built-in **and** updating
 `FIRST_PARTY_PUBLIC_KEY` everywhere. A runtime pinned to the old key refuses to run
 the new plugins — which is the system working, not breaking.
 
+## The fourth question: "did the operator vouch for this?" — sideloading
+
+The marketplace answers "did the registry approve this stranger's code?"; the
+first-party key answers "is the code we ship the code we signed?". Neither helps the
+operator who runs a **self-hosted, maybe air-gapped** instance and wants to install a
+theme or plugin **they wrote themselves**, without a marketplace in the loop. That is
+sideloading, and it has its own trust anchor — a third pinned key, the **operator
+key**:
+
+```
+operator signature → "did THIS instance's operator vouch for this?"   (the operator's key)
+```
+
+Same discipline as the other two: the runtimes pin `OPERATOR_PUBLIC_KEY` and verify a
+sideload against it, on a trust route the caller names explicitly — a package handed
+the wrong route is refused, never retried against another key. It is off by default;
+an instance with no operator key pinned refuses every upload.
+
+**The workflow.** An admin with the owner-only `theme:sideload` / `plugin:sideload`
+permission uploads a package under Admin → Appearance (or Plugins) → *Install from
+file*. It lands **quarantined**: verified and stored, but no runtime can fetch it
+until the same admin clicks **Approve** — the review the marketplace would have done,
+performed by the operator, as a durable audited act rather than a dialog. Uninstall
+falls any live sites back to safety, purges the runtime caches, and deletes it.
+
+**Two postures, and a boundary you choose to keep or spend.** cms-api holds no
+signing key today — which is why a compromised cms-api still cannot make a runtime
+run code (it cannot forge a signature). Sideloading lets you keep that or trade it:
+
+| | You do | cms-api holds | Trade-off |
+| --- | --- | --- | --- |
+| **Offline-sign** (default, safer) | `zcms pack --operator-key op-private.pem …`, upload the `.zcms` | nothing | Compromising cms-api is still **not** code-exec in site-runtime. Needs the CLI. |
+| **Server-sign** (convenient) | upload a plain `.zip`; cms-api unpacks, packs and signs it | `OPERATOR_PRIVATE_KEY` | A cms-api compromise **becomes** code-exec in site-runtime. No CLI needed. |
+
+The `.zip` path is the only reason cms-api ever unpacks an archive it did not make,
+so it goes through a hardened reader (`packages/package/zip.ts`) that refuses
+symlinks, path traversal, decompression bombs and special files, then hands a clean
+tree to the same allow-listed packer — no zip byte travels further. Server-sign is
+opt-in precisely because holding the key is the thing that spends the boundary.
+
+**Themes are gated twice.** A theme runs unsandboxed in site-runtime, so sideloading
+one is code execution in the process that renders every page. It needs the owner
+permission **and** `ALLOW_THEME_SIDELOAD=true`, set on purpose. A plugin runs in the
+isolate regardless, so it needs only the permission.
+
+**A sideload cannot impersonate.** It may not take an id that belongs to a built-in
+or a marketplace package, nor the reserved `vn.zsoft.` namespace, and the runtimes
+independently force any key they know as built-in down the first-party path whatever
+origin cms-api reports — so a file named `vn.zsoft.theme.default` can never displace
+the safe-harbour fallback. Sideloaded packages carry `origin=SIDELOAD`; they never
+appear in the marketplace catalogue, and the admin shows them apart, as unverified.
+
+To bake a signed built-in (BUILTIN, not SIDELOAD) into the image instead, see
+`pnpm sign:builtins` above — that is a different path, for code Z-SOFT ships.
+
 ## The flow
 
 ```
@@ -290,8 +345,9 @@ to find out whether a contract leaks is to implement it a second time.**
 
 ## The CLI
 
-`zcms` (`packages/cli`, published as `@zcmsorg/cli`) has four commands, and the
-split is deliberate:
+`zcms` (`packages/cli`, published as `@zcmsorg/cli`) has a handful of commands, and
+the split is deliberate. Run `zcms help` (or `zcms` with no argument) for the same
+list, including worked examples:
 
 ```
 zcms init [<dir>] [--kind theme|plugin] [--id <reverse.dns.id>] [--yes]
@@ -306,13 +362,57 @@ zcms keygen [--out <dir>]
 zcms pack <dir> --kind theme|plugin --key <private.pem> --pub <public.pem> [--out <file>]
     Turns a built directory into one signed .zcms file. The result carries a
     publisher signature only, so no runtime will run it yet.
+    Add --operator-key <private.pem> to ALSO stamp an operator signature, for
+    sideloading into your own instance (see "Sideloading" below).
 
 zcms verify <file.zcms> [--marketplace-key <public.pem>]
     Checks a package the way a runtime would, so an author can prove to
     themselves that what they are about to publish is what they think it is.
     Without --marketplace-key it checks the publisher signature only — enough to
     self-check before submitting, not enough to install.
+
+zcms help
+    Prints the command list and the example workflows.
 ```
+
+### Creating a `.zcms`, step by step
+
+The file you upload — to the marketplace, or into your own instance — is always
+produced the same way. From a theme called `com.acme.theme.blog`:
+
+```bash
+# 1. Scaffold (skip if you already have a project). This writes a manifest and a
+#    build that already satisfy the ESM/.mjs/external-React contracts above.
+npx @zcmsorg/cli init ./blog --kind theme --id com.acme.theme.blog
+
+# 2. Build the distributable. The runtime loads dist/, never src/, and never runs
+#    your build — so the package must contain a BUILT bundle.
+cd blog && npm install && npm run build      # produces dist/index.mjs (+ theme.css)
+
+# 3. Generate your signing key ONCE, and keep the private half safe. keygen writes
+#    it 0600 into the project; the packer refuses to include key material, so it
+#    never travels inside the package.
+npx @zcmsorg/cli keygen                       # -> keys/publisher-private.pem, keys/publisher-public.pem
+
+# 4. Pack + sign. One file comes out, named <id>-<version>.zcms.
+npx @zcmsorg/cli pack ./blog --kind theme \
+  --key keys/publisher-private.pem --pub keys/publisher-public.pem
+# -> com.acme.theme.blog-1.0.0.zcms
+
+# 5. Check your own work the way a runtime will, before anyone else does.
+npx @zcmsorg/cli verify com.acme.theme.blog-1.0.0.zcms
+```
+
+What ends up inside is only the distributable: the manifest, `dist/`, declared
+assets and screenshots. Source, `node_modules`, `.env` and anything matching a key
+pattern are dropped by the packer — silently and unconditionally, so a mistake in
+your working tree cannot become a leak in the package (`packages/package/archive.ts`,
+the `DENIED` list). Plugins are the same recipe with `--kind plugin` and a
+`plugin.json`; a plugin's entry is one **CommonJS** file, a theme's is **ESM `.mjs`**
+(see "Why `init` exists").
+
+Where the file goes next is the only fork: submit it to the marketplace for review
+and counter-signing, or sideload it into an instance you run — next section.
 
 The tool is installed globally (`npm i -g @zcmsorg/cli`), on the machine that holds
 the private key behind everything its owner publishes. Its dependency tree is

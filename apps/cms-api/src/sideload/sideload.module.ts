@@ -22,9 +22,15 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { getSystemDb } from "@zcmsorg/database";
 import {
+  buildPackage,
+  looksLikeZip,
   openPackage,
+  unzipToDir,
   verifyOperator,
   type PackageEnvelope,
 } from "@zcmsorg/package";
@@ -111,6 +117,26 @@ export class SideloadService {
   }
 
   /**
+   * The operator PRIVATE key — present only on instances that opted into the .zip
+   * convenience path, where cms-api packs and signs on the operator's behalf.
+   *
+   * This is the trade-off the operator chose knowingly: holding a key that runtimes
+   * trust means compromising cms-api becomes code execution in site-runtime, a
+   * boundary the offline-signing path (no private key here) keeps intact. Absent
+   * means only pre-signed .zcms files are accepted, and this refuses the zip.
+   */
+  private operatorPrivateKey(): string {
+    const key = (this.config.get<string>("OPERATOR_PRIVATE_KEY") ?? "").replace(
+      /\\n/g,
+      "\n",
+    );
+    if (!key) {
+      throw new BadRequestException(t()("errors.sideload.zipNotEnabled"));
+    }
+    return key;
+  }
+
+  /**
    * Themes run UNSANDBOXED inside site-runtime, so sideloading one is remote code
    * execution in the process that renders every page. That is gated behind an env
    * flag the operator must set on purpose — a permission alone is not enough, because
@@ -143,12 +169,16 @@ export class SideloadService {
       );
     }
 
-    // PR3 accepts an already-signed .zcms only. The .zip path (cms-api packs and
-    // signs on the operator's behalf) needs the OPERATOR_PRIVATE_KEY and a hardened
-    // zip reader, and arrives in PR4.
+    // Two accepted shapes, one common gate below. A pre-signed .zcms (gzip) is used
+    // as-is. A raw .zip (PK\x03\x04) is unpacked, packed and signed here — but only
+    // if the operator private key is configured — and the result then goes through
+    // the very same verifyOperator/scan path, so the server-signed route earns no
+    // shortcut over the offline-signed one.
+    const zcms = looksLikeZip(bytes) ? await this.packFromZip(kind, bytes) : bytes;
+
     let pkg;
     try {
-      pkg = await openPackage(bytes);
+      pkg = await openPackage(zcms);
     } catch (err) {
       throw new BadRequestException(
         t()("errors.packages.unreadable", { reason: (err as Error).message }),
@@ -185,7 +215,7 @@ export class SideloadService {
     // through because a human already reviewed the package. A sideload has had no
     // such review, so `reject` refuses it outright and everything else lands
     // QUARANTINED — the operator becomes that human, explicitly, at approve time.
-    const scan = await scanPackage(bytes, { maxUnpackedBytes: MAX_PACKAGE_BYTES });
+    const scan = await scanPackage(zcms, { maxUnpackedBytes: MAX_PACKAGE_BYTES });
     if (scan.verdict === "reject") {
       const blockers = scan.findings
         .filter((f) => f.severity === "block")
@@ -201,7 +231,7 @@ export class SideloadService {
       new PutObjectCommand({
         Bucket: this.bucket,
         Key: storageKey,
-        Body: bytes,
+        Body: zcms,
         ContentType: "application/octet-stream",
       }),
     );
@@ -223,6 +253,40 @@ export class SideloadService {
       `Sideloaded ${kind} ${key}@${version} (scan: ${scan.verdict}) — QUARANTINED, awaiting approval`,
     );
     return { key, version, reviewStatus: "QUARANTINED", scan };
+  }
+
+  /**
+   * Turns a raw .zip the operator uploaded into a signed .zcms — the server-sign path.
+   *
+   * The zip is opened by the HARDENED reader (`unzipToDir`: no symlinks, no traversal,
+   * no bombs, files forced to 0644), into a throwaway temp dir. `buildPackage` then
+   * reads the manifest, packs ONLY the allow-listed distributable files (dropping any
+   * key material, source or node_modules that rode along), and signs the result with
+   * the operator key — as both publisher and operator, since a sideload speaks only
+   * for itself. What comes back is an ordinary .zcms that the caller runs through the
+   * same verifyOperator + scan gate as a pre-signed upload; the scan therefore sees
+   * exactly the bytes that will be stored and imported, not the raw upload.
+   */
+  private async packFromZip(kind: Kind, zip: Buffer): Promise<Buffer> {
+    const operatorPrivate = this.operatorPrivateKey();
+    const operatorPublic = this.operatorPublicKey();
+
+    const staging = fs.mkdtempSync(
+      path.join(fs.realpathSync(os.tmpdir()), "zcms-sideload-"),
+    );
+    try {
+      await unzipToDir(zip, staging);
+      const { file } = await buildPackage(staging, kind, operatorPrivate, operatorPublic, {
+        operatorPrivateKey: operatorPrivate,
+      });
+      return file;
+    } catch (err) {
+      throw new BadRequestException(
+        t()("errors.sideload.zipUnreadable", { reason: (err as Error).message }),
+      );
+    } finally {
+      fs.rmSync(staging, { recursive: true, force: true });
+    }
   }
 
   /**
@@ -525,7 +589,7 @@ class SideloadController {
       "because a theme runs unsandboxed in site-runtime.",
   })
   @ApiAuthed("theme:sideload")
-  @ApiFileUpload("A signed .zcms theme package.")
+  @ApiFileUpload("A signed .zcms theme package, or a .zip if OPERATOR_PRIVATE_KEY is set.")
   @RequirePermissions("theme:sideload")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_PACKAGE_BYTES } }))
   installTheme(@Actor() actor: RequestActor, @UploadedFile() file: Express.Multer.File) {
@@ -542,7 +606,7 @@ class SideloadController {
       "admin later grants it at install time.",
   })
   @ApiAuthed("plugin:sideload")
-  @ApiFileUpload("A signed .zcms plugin package.")
+  @ApiFileUpload("A signed .zcms plugin package, or a .zip if OPERATOR_PRIVATE_KEY is set.")
   @RequirePermissions("plugin:sideload")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_PACKAGE_BYTES } }))
   installPlugin(@Actor() actor: RequestActor, @UploadedFile() file: Express.Multer.File) {

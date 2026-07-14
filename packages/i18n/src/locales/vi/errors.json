@@ -106,7 +106,9 @@
     "scanRejected": "Gói này không qua được quét bảo mật nên không được cài: {findings}",
     "reservedNamespace": "\"{key}\" dùng namespace dành riêng \"{prefix}\" thuộc về các gói của nền tảng. Hãy chọn id khác.",
     "keyTaken": "\"{key}\" đã là id của một gói dựng sẵn hoặc gói marketplace. Gói cài từ file không được lấy tên không phải của nó.",
-    "notSideload": "{key}@{version} không phải gói cài từ file, nên không thể duyệt hay gỡ qua đường này."
+    "notSideload": "{key}@{version} không phải gói cài từ file, nên không thể duyệt hay gỡ qua đường này.",
+    "zipNotEnabled": "Máy chủ này chỉ nhận file .zcms đã ký sẵn. Để tải lên .zip thô, người vận hành phải cấu hình OPERATOR_PRIVATE_KEY để máy chủ tự ký.",
+    "zipUnreadable": "Không thể đóng gói .zip: {reason}"
   },
   "docs": {
     "title": "Tài liệu API đang tắt",

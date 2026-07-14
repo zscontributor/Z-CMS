@@ -106,7 +106,9 @@
     "scanRejected": "This package failed the security scan and was not installed: {findings}",
     "reservedNamespace": "\"{key}\" uses the reserved namespace \"{prefix}\", which belongs to the platform's own packages. Choose a different id.",
     "keyTaken": "\"{key}\" is already the id of a built-in or marketplace package. A sideload cannot take a name that is not its own.",
-    "notSideload": "{key}@{version} was not sideloaded, so it cannot be approved or removed through this path."
+    "notSideload": "{key}@{version} was not sideloaded, so it cannot be approved or removed through this path.",
+    "zipNotEnabled": "This instance only accepts pre-signed .zcms files. To upload a raw .zip, the operator must configure OPERATOR_PRIVATE_KEY so the server can sign it.",
+    "zipUnreadable": "The .zip could not be packaged: {reason}"
   },
   "docs": {
     "title": "API documentation is off",

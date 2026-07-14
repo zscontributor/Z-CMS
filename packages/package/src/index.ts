@@ -8,3 +8,4 @@ export * from "./payload-rules";
 export * from "./semver";
 export * from "./build";
 export * from "./loader";
+export * from "./zip";

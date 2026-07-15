@@ -188,6 +188,8 @@ export const CreateSiteSchema = z.object({
 export const UpdateSiteSchema = z
   .object({
     name: z.string().min(1).max(120),
+    slug: SlugSchema,
+    hostname: HostnameSchema,
     // A new site is DRAFT, and DRAFT does not render — `resolveHost` refuses any
     // site that is not PUBLISHED. So publishing is an *update*, and this is it.
     status: z.enum(["DRAFT", "PUBLISHED", "SUSPENDED", "ARCHIVED"]),

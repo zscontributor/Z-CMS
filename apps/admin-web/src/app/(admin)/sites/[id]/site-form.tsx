@@ -2,12 +2,24 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { SiteDto } from "@zcmsorg/schemas";
+import type { LocaleInfo } from "@zcmsorg/i18n";
+import { HOSTNAME_RE, normalizeHostname, type SiteDto } from "@zcmsorg/schemas";
 import { updateSiteAction } from "@/app/actions/site";
 import { MediaPickerField } from "@/components/editor/media-picker";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/field";
+import { Field, Input, Select } from "@/components/ui/field";
 import { useT } from "@/lib/i18n-provider";
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 63);
+}
 
 /**
  * The site's name, its brand, and whether it is published.
@@ -21,20 +33,30 @@ import { useT } from "@/lib/i18n-provider";
 export function SiteForm({
   site,
   canUpdate,
+  locales,
 }: {
   site: SiteDto;
   canUpdate: boolean;
+  locales: LocaleInfo[];
 }) {
   const t = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const [name, setName] = useState(site.name);
+  const [slug, setSlug] = useState(site.slug);
+  const [hostname, setHostname] = useState(
+    site.domains.find((domain) => domain.isPrimary)?.hostname ?? site.domains[0]?.hostname ?? "",
+  );
+  const [defaultLocale, setDefaultLocale] = useState(site.defaultLocale);
   const [primaryColor, setPrimaryColor] = useState(site.brand.primaryColor);
   const [logo, setLogo] = useState(site.brand.logo);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const published = site.status === "PUBLISHED";
+  const effectiveHostname = normalizeHostname(hostname);
+  const hostnameValid = HOSTNAME_RE.test(effectiveHostname);
+  const hostnameError = effectiveHostname && !hostnameValid;
 
   function save(patch: Parameters<typeof updateSiteAction>[1]) {
     setResult(null);
@@ -60,22 +82,84 @@ export function SiteForm({
         onSubmit={(event) => {
           event.preventDefault();
           if (!canUpdate || pending) return;
+          if (!slug || !hostnameValid) return;
           save({
             name: name.trim() || site.name,
+            slug,
+            hostname: effectiveHostname,
+            defaultLocale,
             // The colour is validated by the API as a six-digit hex; the native
             // colour input can only ever produce one, so the two agree.
             brand: { primaryColor, logo },
           });
         }}
       >
-        <Field label={t("admin.sites.name")} htmlFor="site-name">
-          <Input
-            id="site-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            disabled={!canUpdate || pending}
-          />
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("admin.sites.name")} htmlFor="site-name">
+            <Input
+              id="site-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              disabled={!canUpdate || pending}
+            />
+          </Field>
+
+          <Field
+            label={t("admin.sites.slug")}
+            htmlFor="site-slug"
+            hint={t("admin.sites.slugHelp")}
+          >
+            <Input
+              id="site-slug"
+              value={slug}
+              onChange={(event) => setSlug(slugify(event.target.value))}
+              disabled={!canUpdate || pending}
+              autoComplete="off"
+            />
+          </Field>
+
+          <Field
+            label={t("admin.sites.hostname")}
+            htmlFor="site-hostname"
+            hint={t("admin.sites.hostnameHelp")}
+          >
+            <Input
+              id="site-hostname"
+              value={hostname}
+              onChange={(event) => setHostname(event.target.value)}
+              onBlur={() => setHostname(effectiveHostname)}
+              disabled={!canUpdate || pending}
+              placeholder="localhost:3100"
+              autoComplete="off"
+              spellCheck={false}
+              aria-invalid={hostnameError || undefined}
+            />
+            {hostnameError ? (
+              <p role="alert" className="mt-1 text-xs text-red-600 dark:text-red-400">
+                {t("admin.sites.hostnameInvalid")}
+              </p>
+            ) : effectiveHostname && effectiveHostname !== hostname.trim() ? (
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                {t("admin.sites.hostnameNormalized", { hostname: effectiveHostname })}
+              </p>
+            ) : null}
+          </Field>
+
+          <Field label={t("admin.sites.defaultLocale")} htmlFor="site-locale">
+            <Select
+              id="site-locale"
+              value={defaultLocale}
+              onChange={(event) => setDefaultLocale(event.target.value)}
+              disabled={!canUpdate || pending}
+            >
+              {locales.map((locale) => (
+                <option key={locale.code} value={locale.code}>
+                  {locale.nativeName} ({locale.code})
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
 
         <div className="border-t border-[var(--border)] pt-5">
           <h2 className="text-sm font-semibold">{t("admin.sites.brand")}</h2>
@@ -162,7 +246,7 @@ export function SiteForm({
         ) : null}
 
         <div className="flex items-center gap-2 border-t border-[var(--border)] pt-5">
-          <Button type="submit" disabled={!canUpdate || pending}>
+          <Button type="submit" disabled={!canUpdate || pending || !slug || !hostnameValid}>
             {pending ? t("admin.sites.saving") : t("admin.sites.save")}
           </Button>
 

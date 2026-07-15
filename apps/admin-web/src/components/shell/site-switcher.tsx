@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { SiteDto } from "@zcmsorg/schemas";
 import { switchSiteAction } from "@/app/actions/site";
 import { Select } from "@/components/ui/field";
@@ -19,6 +20,7 @@ export function SiteSwitcher({
   currentSiteId: string | null;
 }) {
   const t = useT();
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [pending, startTransition] = useTransition();
 
@@ -29,7 +31,13 @@ export function SiteSwitcher({
   return (
     <form
       ref={formRef}
-      action={(formData) => startTransition(() => void switchSiteAction(formData))}
+      action={(formData) =>
+        startTransition(async () => {
+          await switchSiteAction(formData);
+          router.replace("/");
+          router.refresh();
+        })
+      }
       className="flex items-center gap-2"
     >
       <label htmlFor="site-switcher" className="text-[11px] uppercase tracking-wider z-muted">

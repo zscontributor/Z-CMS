@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SWITCHER_LOCALES } from "@zcmsorg/i18n";
 import { can, getSession, listSites } from "@/lib/api";
 import { getT } from "@/lib/locale";
 import { SiteForm } from "./site-form";
@@ -34,7 +35,7 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
         </p>
       </div>
 
-      <SiteForm site={site} canUpdate={canUpdate} />
+      <SiteForm site={site} canUpdate={canUpdate} locales={SWITCHER_LOCALES} />
     </div>
   );
 }

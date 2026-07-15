@@ -316,24 +316,48 @@ export class SitesController {
       throw new ConflictException(t()("errors.sites.defaultLocaleNotPublished"));
     }
 
-    const site = await db().site.update({
-      where: { id },
-      data: {
-        ...(body.name !== undefined ? { name: body.name } : {}),
-        ...(body.status !== undefined ? { status: body.status } : {}),
-        ...(body.defaultLocale !== undefined ? { defaultLocale } : {}),
-        ...(body.locales !== undefined ? { locales } : {}),
-        ...(body.brand !== undefined
-          ? {
-              settings: settingsWithBrand(
-                existing.settings,
-                body.brand,
-              ) as Prisma.InputJsonValue,
-            }
-          : {}),
-      },
-      include: SITE_INCLUDE,
-    });
+    let site: Parameters<typeof toSiteDto>[0];
+    try {
+      site = await db().site.update({
+        where: { id },
+        data: {
+          ...(body.name !== undefined ? { name: body.name } : {}),
+          ...(body.slug !== undefined ? { slug: body.slug } : {}),
+          ...(body.status !== undefined ? { status: body.status } : {}),
+          ...(body.defaultLocale !== undefined ? { defaultLocale } : {}),
+          ...(body.locales !== undefined ? { locales } : {}),
+          ...(body.brand !== undefined
+            ? {
+                settings: settingsWithBrand(
+                  existing.settings,
+                  body.brand,
+                ) as Prisma.InputJsonValue,
+              }
+            : {}),
+        },
+        include: SITE_INCLUDE,
+      });
+
+      if (body.hostname !== undefined) {
+        const primary = existing.domains.find((domain) => domain.isPrimary) ?? existing.domains[0];
+        if (!primary) throw new ConflictException("This site has no hostname to update.");
+        await db().domain.update({
+          where: { id: primary.id },
+          data: { hostname: body.hostname },
+        });
+        site = await db().site.findUniqueOrThrow({ where: { id }, include: SITE_INCLUDE });
+      }
+    } catch (err) {
+      if ((err as { code?: string }).code === "P2002") {
+        const target = (err as { meta?: { target?: string[] | string } }).meta?.target;
+        const fields = Array.isArray(target) ? target.join(",") : String(target ?? "");
+        if (fields.includes("hostname")) {
+          throw new ConflictException(t()("errors.sites.hostnameTaken"));
+        }
+        throw new ConflictException(t()("errors.sites.slugTaken"));
+      }
+      throw err;
+    }
 
     // TWO caches, and forgetting either is a bug the operator can see and cannot
     // explain:
@@ -343,7 +367,9 @@ export class SitesController {
     //     minutes and is NOT keyed by that version. Without dropping it, an owner
     //     changes their logo, reloads, and sees the old one for ten minutes with no
     //     way to hurry it along.
-    await this.cache.forgetHosts(existing.domains.map((d) => d.hostname));
+    await this.cache.forgetHosts([
+      ...new Set([...existing.domains, ...site.domains].map((d) => d.hostname)),
+    ]);
     await this.cache.invalidateSite(id);
 
     return toSiteDto(site);

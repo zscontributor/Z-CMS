@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { SiteBrand, SiteDto } from "@zcmsorg/schemas";
 import { ApiError, apiFetch, can, getSession, listSites } from "@/lib/api";
@@ -21,9 +20,8 @@ function toMessage(error: unknown, fallback: string): string {
 
 /**
  * Switching site changes the X-Site-Id on every subsequent request, so the whole
- * layout's data is stale afterwards — hence a layout-level revalidate, and a
- * bounce to the dashboard because the content type keys of the new site may not
- * include the one currently being viewed.
+ * layout's data is stale afterwards. The client does the follow-up navigation
+ * after this action returns, once the Set-Cookie response has landed.
  */
 export async function switchSiteAction(formData: FormData): Promise<void> {
   const siteId = String(formData.get("siteId") ?? "");
@@ -38,7 +36,6 @@ export async function switchSiteAction(formData: FormData): Promise<void> {
   store.set(SITE_COOKIE, siteId, siteCookieOptions);
 
   revalidatePath("/", "layout");
-  redirect("/");
 }
 
 /**
@@ -94,7 +91,10 @@ export async function updateSiteAction(
   id: string,
   patch: {
     name?: string;
+    slug?: string;
+    hostname?: string;
     status?: SiteDto["status"];
+    defaultLocale?: string;
     brand?: SiteBrand;
   },
 ): Promise<SiteActionResult> {

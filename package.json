@@ -18,6 +18,8 @@
     "db:migrate": "pnpm --filter @zcmsorg/database --fail-if-no-match migrate",
     "db:reset": "pnpm --filter @zcmsorg/database --fail-if-no-match reset",
     "db:seed": "pnpm --filter @zcmsorg/database --fail-if-no-match seed",
+    "db:locales:check": "pnpm --filter @zcmsorg/database --fail-if-no-match locales:enable",
+    "db:locales:apply": "pnpm --filter @zcmsorg/database --fail-if-no-match locales:enable -- --apply",
     "infra:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d",
     "infra:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
     "infra:logs": "docker compose -f infrastructure/docker/docker-compose.yml logs -f",

@@ -8,7 +8,7 @@ const site = {
   findUniqueOrThrow: vi.fn(),
   findMany: vi.fn(),
 };
-const domain = { create: vi.fn() };
+const domain = { create: vi.fn(), update: vi.fn() };
 const contentType = { create: vi.fn() };
 const content = { create: vi.fn() };
 
@@ -69,6 +69,7 @@ beforeEach(() => {
   site.create.mockResolvedValue({ id: "s1" });
   site.findUniqueOrThrow.mockResolvedValue(row());
   domain.create.mockResolvedValue({ id: "d1" });
+  domain.update.mockResolvedValue({ id: "d1" });
   contentType.create.mockResolvedValue({ id: "ct1" });
   content.create.mockResolvedValue({ id: "c1" });
 });
@@ -319,6 +320,28 @@ describe("update", () => {
     expect(data).toEqual({ name: "Renamed" });
     expect(data).not.toHaveProperty("settings");
     expect(data).not.toHaveProperty("status");
+  });
+
+  it("updates the slug and primary hostname from the edit-site form", async () => {
+    site.findUnique.mockResolvedValueOnce(row());
+    site.findUniqueOrThrow.mockResolvedValueOnce(
+      row({
+        slug: "renamed",
+        domains: [{ id: "d1", hostname: "renamed.test", isPrimary: true }],
+      }),
+    );
+    site.update.mockResolvedValue(row({ slug: "renamed" }));
+
+    await controller().update("s1", {
+      slug: "renamed",
+      hostname: "renamed.test",
+    } as never);
+
+    expect(site.update.mock.calls[0][0].data).toMatchObject({ slug: "renamed" });
+    expect(domain.update).toHaveBeenCalledWith({
+      where: { id: "d1" },
+      data: { hostname: "renamed.test" },
+    });
   });
 
   it("drops the hostname cache as well as the render cache", async () => {

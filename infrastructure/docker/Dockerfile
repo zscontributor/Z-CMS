@@ -144,7 +144,7 @@ ENV NODE_ENV=production
 WORKDIR /repo
 # All three commands are idempotent. The seed scripts verify every manifest against
 # FIRST_PARTY_PUBLIC_KEY before writing it to the catalogue.
-CMD ["/bin/sh", "-c", "pnpm --filter @zcmsorg/database migrate && pnpm --filter @zcmsorg/database seed:plugins && pnpm --filter @zcmsorg/database seed:themes"]
+CMD ["/bin/sh", "-c", "pnpm --filter @zcmsorg/database migrate && pnpm --filter @zcmsorg/database seed:plugins && pnpm --filter @zcmsorg/database seed:themes && if [ \"$ENABLE_SITE_LOCALES_ON_DEPLOY\" = \"1\" ]; then pnpm --filter @zcmsorg/database locales:enable -- --apply --locales \"${SITE_LOCALES:-en,vi,ja}\"; fi"]
 
 # ===========================================================================
 # Next.js apps run from their traced standalone output (next.config sets

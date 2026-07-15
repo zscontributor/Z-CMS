@@ -334,6 +334,7 @@ export const getContentTypeByKey = cache(async (key: string): Promise<ContentTyp
 export interface ContentListQuery {
   contentTypeKey?: string;
   status?: string;
+  locale?: string;
   page?: number;
   perPage?: number;
   search?: string;

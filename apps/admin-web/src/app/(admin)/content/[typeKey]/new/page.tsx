@@ -69,6 +69,12 @@ export default async function NewContentPage({ params, searchParams }: PageProps
   // translation ends up with different blocks from the page it translates.
   //
   // The slug is deliberately NOT copied. "/vi/about" is not a Vietnamese URL.
+  const locales = site?.locales?.length ? site.locales : ["vi"];
+  const fallbackLocale = site?.defaultLocale ?? locales[0] ?? "en";
+  const selectedLocale = locales.includes(targetLocale ?? "")
+    ? targetLocale!
+    : fallbackLocale;
+
   const source =
     translationOf && targetLocale && site?.locales?.includes(targetLocale)
       ? await getContent(translationOf).catch(() => null)
@@ -81,7 +87,7 @@ export default async function NewContentPage({ params, searchParams }: PageProps
     ? {
         title: translating.title,
         slug: "",
-        locale: targetLocale!,
+        locale: selectedLocale,
         translationGroupId: translating.translationGroupId,
         excerpt: translating.excerpt ?? "",
         status: "DRAFT",
@@ -94,7 +100,7 @@ export default async function NewContentPage({ params, searchParams }: PageProps
         slug: "",
         // The site's default, never a constant: an entry filed under a language
         // the site does not publish is served at a URL that does not resolve.
-        locale: site?.defaultLocale ?? "en",
+        locale: selectedLocale,
         excerpt: "",
         status: "DRAFT",
         data: defaults,
@@ -129,10 +135,38 @@ export default async function NewContentPage({ params, searchParams }: PageProps
           </>
         }
       />
+      {!translating && locales.length > 1 ? (
+        <div
+          className="mb-4 flex w-fit items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-sunken)] p-1"
+          role="tablist"
+          aria-label={t("content.list.languageTabs")}
+        >
+          {locales.map((value) => {
+            const active = value === selectedLocale;
+            const name =
+              new Intl.DisplayNames([selectedLocale], { type: "language" }).of(value) ??
+              value;
+            return (
+              <Link
+                key={value}
+                href={`/content/${type.key}/new?locale=${encodeURIComponent(value)}`}
+                role="tab"
+                aria-selected={active}
+                className={
+                  active
+                    ? "inline-flex h-7 items-center rounded bg-[var(--surface-raised)] px-2.5 text-xs font-medium shadow-sm"
+                    : "inline-flex h-7 items-center rounded px-2.5 text-xs font-medium z-muted hover:text-[var(--foreground)]"
+                }
+              >
+                {name}
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
       <ContentEditor
         type={type}
         initial={initial}
-        locales={site?.locales?.length ? site.locales : ["vi"]}
         contentTypes={contentTypes.map(({ key, name }) => ({ key, name }))}
         permissions={{
           canSave: true,

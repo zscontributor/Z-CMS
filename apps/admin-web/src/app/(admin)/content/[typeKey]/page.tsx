@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ContentStatusSchema } from "@zcmsorg/schemas";
-import { can, getContentTypeByKey, getSession, listContents } from "@/lib/api";
+import {
+  can,
+  getContentTypeByKey,
+  getCurrentSite,
+  getSession,
+  listContents,
+} from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { EmptyState, TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
@@ -20,7 +26,7 @@ const PER_PAGE = 20;
 
 interface PageProps {
   params: Promise<{ typeKey: string }>;
-  searchParams: Promise<{ page?: string; status?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; status?: string; q?: string; locale?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -31,11 +37,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ContentListPage({ params, searchParams }: PageProps) {
   const { typeKey } = await params;
-  const { page: pageParam, status: statusParam, q } = await searchParams;
+  const { page: pageParam, status: statusParam, q, locale: localeParam } = await searchParams;
 
   const t = await getT();
   const locale = await getLocale();
-  const [user, type] = await Promise.all([getSession(), getContentTypeByKey(typeKey)]);
+  const [user, type, site] = await Promise.all([
+    getSession(),
+    getContentTypeByKey(typeKey),
+    getCurrentSite(),
+  ]);
   if (!type) notFound();
   if (!can(user, "content:read")) {
     return (
@@ -45,10 +55,16 @@ export default async function ContentListPage({ params, searchParams }: PageProp
 
   const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
   const status = ContentStatusSchema.safeParse(statusParam).success ? statusParam : undefined;
+  const locales = site?.locales?.length ? site.locales : ["vi"];
+  const fallbackLocale = site?.defaultLocale ?? locales[0] ?? "en";
+  const selectedLocale = locales.includes(localeParam ?? "")
+    ? localeParam!
+    : fallbackLocale;
 
   const result = await listContents({
     contentTypeKey: typeKey,
     status,
+    locale: selectedLocale,
     search: q,
     page,
     perPage: PER_PAGE,
@@ -61,7 +77,11 @@ export default async function ContentListPage({ params, searchParams }: PageProp
    */
   if (type.isSingleton && !q && !status) {
     const existing = result.items[0];
-    redirect(`/content/${typeKey}/${existing ? existing.id : "new"}`);
+    redirect(
+      `/content/${typeKey}/${existing ? existing.id : "new"}${
+        existing ? "" : `?locale=${encodeURIComponent(selectedLocale)}`
+      }`,
+    );
   }
 
   const canCreate = can(user, "content:create");
@@ -76,7 +96,10 @@ export default async function ContentListPage({ params, searchParams }: PageProp
         }
         actions={
           canCreate ? (
-            <LinkButton href={`/content/${typeKey}/new`} variant="primary">
+            <LinkButton
+              href={`/content/${typeKey}/new?locale=${encodeURIComponent(selectedLocale)}`}
+              variant="primary"
+            >
               <Icon name="plus" size={18} />
               {t("content.list.create")}
             </LinkButton>
@@ -84,7 +107,7 @@ export default async function ContentListPage({ params, searchParams }: PageProp
         }
       />
 
-      <ListToolbar typeKey={typeKey} />
+      <ListToolbar typeKey={typeKey} locales={locales} selectedLocale={selectedLocale} />
 
       {result.items.length === 0 ? (
         <div className="z-card">
@@ -99,7 +122,11 @@ export default async function ContentListPage({ params, searchParams }: PageProp
             }
             action={
               canCreate && !q && !status ? (
-                <LinkButton href={`/content/${typeKey}/new`} variant="primary" size="sm">
+                <LinkButton
+                  href={`/content/${typeKey}/new?locale=${encodeURIComponent(selectedLocale)}`}
+                  variant="primary"
+                  size="sm"
+                >
                   {t("content.list.createType", { type: type.name.toLowerCase() })}
                 </LinkButton>
               ) : null
@@ -160,7 +187,7 @@ export default async function ContentListPage({ params, searchParams }: PageProp
             totalPages={result.totalPages}
             total={result.total}
             basePath={`/content/${typeKey}`}
-            query={{ q, status }}
+            query={{ q, status, locale: selectedLocale }}
           />
         </>
       )}

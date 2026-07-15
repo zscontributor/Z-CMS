@@ -7,7 +7,6 @@ import {
   getContent,
   getContentTranslations,
   getContentTypeByKey,
-  getCurrentSite,
   getSession,
   listContentTypes,
 } from "@/lib/api";
@@ -41,10 +40,9 @@ export default async function EditContentPage({ params }: PageProps) {
   // `listContentTypes` is the same cached call `getContentTypeByKey` resolves the
   // URL key through, so asking for the whole set costs no second request. A
   // `core/content-list` block needs it to offer the site's types as a choice.
-  const [user, type, site, contentTypes] = await Promise.all([
+  const [user, type, contentTypes] = await Promise.all([
     getSession(),
     getContentTypeByKey(typeKey),
-    getCurrentSite(),
     listContentTypes(),
   ]);
   if (!type) notFound();
@@ -104,7 +102,6 @@ export default async function EditContentPage({ params }: PageProps) {
       <ContentEditor
         type={type}
         initial={initial}
-        locales={site?.locales?.length ? site.locales : [content.locale]}
         contentTypes={contentTypes.map(({ key, name }) => ({ key, name }))}
         permissions={{
           canSave: can(user, "content:update"),

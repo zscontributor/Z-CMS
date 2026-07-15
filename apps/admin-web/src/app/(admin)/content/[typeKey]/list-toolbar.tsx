@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ContentStatusSchema } from "@zcmsorg/schemas";
 import { Input, Select } from "@/components/ui/field";
+import { cn } from "@/lib/cn";
 import { statusKey } from "@/lib/format";
 import { useT } from "@/lib/i18n-provider";
 
@@ -14,7 +15,15 @@ const CONTENT_STATUSES = ContentStatusSchema.options;
  * Filters live in the URL, not in component state: a filtered list has to be
  * linkable and has to survive the round trip through a publish action.
  */
-export function ListToolbar({ typeKey }: { typeKey: string }) {
+export function ListToolbar({
+  typeKey,
+  locales,
+  selectedLocale,
+}: {
+  typeKey: string;
+  locales: string[];
+  selectedLocale: string;
+}) {
   const t = useT();
   const router = useRouter();
   const pathname = usePathname();
@@ -49,8 +58,46 @@ export function ListToolbar({ typeKey }: { typeKey: string }) {
     push(next);
   }
 
+  function hrefForLocale(value: string) {
+    const next = new URLSearchParams(params.toString());
+    next.set("locale", value);
+    next.delete("page");
+    const query = next.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }
+
+  const languageNames = new Intl.DisplayNames([selectedLocale], { type: "language" });
+
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
+      {locales.length > 1 ? (
+        <div
+          className="flex h-8 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-sunken)] p-1"
+          role="tablist"
+          aria-label={t("content.list.languageTabs")}
+        >
+          {locales.map((value) => {
+            const active = value === selectedLocale;
+            return (
+              <a
+                key={value}
+                href={hrefForLocale(value)}
+                role="tab"
+                aria-selected={active}
+                className={cn(
+                  "inline-flex h-6 items-center rounded px-2 text-xs font-medium transition-colors",
+                  active
+                    ? "bg-[var(--surface-raised)] text-[var(--foreground)] shadow-sm"
+                    : "z-muted hover:text-[var(--foreground)]",
+                )}
+              >
+                {languageNames.of(value) ?? value}
+              </a>
+            );
+          })}
+        </div>
+      ) : null}
+
       <form onSubmit={onSearch} className="relative">
         <Input
           type="search"

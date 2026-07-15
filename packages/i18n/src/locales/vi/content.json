@@ -14,6 +14,7 @@
     "denied": "Bạn không có quyền xem nội dung của site này.",
     "searchPlaceholder": "Tìm theo tiêu đề…",
     "searchLabel": "Tìm kiếm nội dung",
+    "languageTabs": "Lọc theo ngôn ngữ",
     "statusFilter": "Lọc theo trạng thái",
     "allStatuses": "Mọi trạng thái",
     "emptyTitle": "Chưa có nội dung",

@@ -14,6 +14,7 @@
     "denied": "このサイトのコンテンツを表示する権限がありません。",
     "searchPlaceholder": "タイトルで検索…",
     "searchLabel": "コンテンツの検索",
+    "languageTabs": "言語でフィルタリング",
     "statusFilter": "ステータスでフィルタリングする",
     "allStatuses": "すべてのステータス",
     "emptyTitle": "まだコンテンツがありません",

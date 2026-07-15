@@ -49,6 +49,7 @@ export class ContentsController {
   @ApiAuthed("content:read")
   @ApiQuery({ name: "contentTypeKey", required: false, description: 'e.g. "post". Omit for every type.' })
   @ApiQuery({ name: "status", required: false, enum: ContentStatusSchema.options })
+  @ApiQuery({ name: "locale", required: false, description: 'e.g. "vi". Filters entries by language.' })
   @ApiQuery({ name: "search", required: false, description: "Substring of the title." })
   @ApiQuery({ name: "page", required: false, schema: { type: "integer", minimum: 1, default: 1 } })
   @ApiQuery({
@@ -63,6 +64,7 @@ export class ContentsController {
     @SiteId() siteId: string,
     @Query("contentTypeKey") contentTypeKey?: string,
     @Query("status") status?: string,
+    @Query("locale") locale?: string,
     @Query("search") search?: string,
     @Query("page") page = "1",
     @Query("perPage") perPage = "20",
@@ -70,6 +72,7 @@ export class ContentsController {
     return this.contents.list(siteId, {
       contentTypeKey,
       status,
+      locale,
       search,
       page: Math.max(1, Number(page) || 1),
       perPage: Math.min(100, Math.max(1, Number(perPage) || 20)),

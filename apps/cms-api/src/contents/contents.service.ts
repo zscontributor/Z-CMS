@@ -90,6 +90,7 @@ export class ContentsService {
     query: {
       contentTypeKey?: string;
       status?: string;
+      locale?: string;
       search?: string;
       page: number;
       perPage: number;
@@ -100,6 +101,7 @@ export class ContentsService {
       OR: await this.visibleDemoScope(siteId),
       ...(query.contentTypeKey ? { contentType: { key: query.contentTypeKey } } : {}),
       ...(query.status ? { status: query.status as never } : {}),
+      ...(query.locale ? { locale: query.locale } : {}),
       ...(query.search
         ? {
             AND: [

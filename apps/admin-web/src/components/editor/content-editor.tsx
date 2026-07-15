@@ -66,13 +66,11 @@ export interface EditorPermissions {
 export function ContentEditor({
   type,
   initial,
-  locales,
   permissions,
   contentTypes,
 }: {
   type: ContentTypeDto;
   initial: EditorInitial;
-  locales: string[];
   permissions: EditorPermissions;
   /**
    * Every content type on the site — not just the one being edited. A
@@ -91,7 +89,7 @@ export function ContentEditor({
   const [id, setId] = useState(initial.id);
   const [title, setTitle] = useState(initial.title);
   const [slug, setSlug] = useState(initial.slug);
-  const [locale, setLocale] = useState(initial.locale);
+  const locale = initial.locale;
   const [excerpt, setExcerpt] = useState(initial.excerpt);
   const [status, setStatus] = useState<ContentStatus>(initial.status);
   const [data, setData] = useState<Record<string, unknown>>(initial.data);
@@ -348,28 +346,6 @@ export function ContentEditor({
               </Select>
             </Field>
 
-            {locales.length > 1 ? (
-              <Field label={t("content.editor.locale")} htmlFor="locale">
-                <Select
-                  id="locale"
-                  value={locale}
-                  // Fixed while translating: the author picked the target language
-                  // on the way in, and a group holds at most one entry per locale.
-                  // Changing it here would either collide with the sibling that
-                  // already exists in the new language, or file this translation
-                  // under a language nobody asked for.
-                  disabled={readOnly || Boolean(initial.translationGroupId)}
-                  onChange={(event) => setLocale(event.target.value)}
-                >
-                  {locales.map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            ) : null}
-
             {error ? (
               <p
                 role="alert"
@@ -421,6 +397,10 @@ export function ContentEditor({
             )}
 
             <dl className="space-y-1.5 border-t border-[var(--border)] pt-3 text-[11px]">
+              <div className="flex justify-between gap-2">
+                <dt className="z-muted">{t("content.editor.locale")}</dt>
+                <dd>{locale}</dd>
+              </div>
               <div className="flex justify-between gap-2">
                 <dt className="z-muted">{t("content.editor.updated")}</dt>
                 <dd>{formatDateTime(savedAt, uiLocale)}</dd>

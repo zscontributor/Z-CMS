@@ -14,6 +14,7 @@
     "denied": "You do not have permission to view this site's content.",
     "searchPlaceholder": "Search by title…",
     "searchLabel": "Search content",
+    "languageTabs": "Filter by language",
     "statusFilter": "Filter by status",
     "allStatuses": "All statuses",
     "emptyTitle": "No content yet",

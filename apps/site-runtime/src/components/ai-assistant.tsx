@@ -23,7 +23,7 @@ export function AiAssistant({ name, welcomeMessage }: { name: string; welcomeMes
     setInput("");
     setPending(true);
     try {
-      const response = await fetch("/api/integrations/ai.assistant/actions/chat", {
+      const response = await fetch("/integrations/ai.assistant/actions/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ messages: next }),

@@ -41,12 +41,18 @@ class RenderController {
     description: "Archive pagination. Ignored for single pages.",
     schema: { type: "integer", minimum: 1, default: 1 },
   })
+  @ApiQuery({
+    name: "q",
+    required: false,
+    description: "Search query. Used only when path is /search.",
+  })
   @ApiZodResponse("RenderPayload")
   @ApiZodResponse("Error", { status: 400, description: "`hostname` is required." })
   resolve(
     @Query("hostname") hostname: string,
     @Query("path") path: string,
     @Query("page") page = "1",
+    @Query("q") q?: string,
   ): Promise<RenderPayload> {
     if (!hostname) throw new BadRequestException(t()("errors.render.missingHostname"));
 
@@ -54,6 +60,7 @@ class RenderController {
       hostname.toLowerCase(),
       path || "/",
       Math.max(1, Number(page) || 1),
+      q,
     );
   }
 }

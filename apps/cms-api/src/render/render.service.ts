@@ -105,15 +105,27 @@ export class RenderService {
     private readonly plugins: PluginsService,
   ) {}
 
-  async resolve(hostname: string, path: string, page = 1): Promise<RenderPayload> {
+  async resolve(
+    hostname: string,
+    path: string,
+    page = 1,
+    searchQuery?: string,
+  ): Promise<RenderPayload> {
     const normalizedPath = this.normalizePath(path);
+    const normalizedSearchQuery = this.normalizeSearchQuery(searchQuery);
     const site = await this.resolveHost(hostname);
 
     // The site's cache version is part of the key. A theme or menu change bumps
     // it, which orphans the whole previous generation of this site's renders
     // without deleting or scanning anything.
     const version = await this.cache.siteVersion(site.id);
-    const cacheKey = CacheService.renderKey(site.id, version, normalizedPath, page);
+    const cacheKey = CacheService.renderKey(
+      site.id,
+      version,
+      normalizedPath,
+      page,
+      normalizedPath === "/search" ? `q=${normalizedSearchQuery}` : undefined,
+    );
     const cached = await this.cache.get<RenderPayload>(cacheKey);
     // A hit is only a hit if it carries `canonicalHost`. Neither cache key is
     // versioned by the shape of what it stores, so an entry written by a build
@@ -124,7 +136,7 @@ export class RenderService {
     if (cached?.site.canonicalHost) return cached;
 
     const payload = await withTenant(site.tenantId, () =>
-      this.build(site, normalizedPath, page),
+      this.build(site, normalizedPath, page, normalizedSearchQuery),
     );
 
     await this.cache.set(cacheKey, payload);
@@ -182,6 +194,7 @@ export class RenderService {
     site: ResolvedSite,
     requestPath: string,
     page: number,
+    searchQuery = "",
   ): Promise<RenderPayload> {
     // "/vi/blog/hello" is the Vietnamese "/blog/hello". Everything below this
     // line works in the site's own path space, with the locale carried
@@ -267,6 +280,29 @@ export class RenderService {
       (themeRow.version as { manifest?: unknown } | null)?.manifest,
       activeThemeKey,
     );
+
+    const searchArchive = await this.trySearch(
+      site.id,
+      path,
+      page,
+      locale,
+      activeThemeKey,
+      searchQuery,
+    );
+    if (searchArchive) {
+      return {
+        ...base,
+        collections: await this.namedCollections(site.id, locale, activeThemeKey, themeQueries),
+        content: null,
+        archive: searchArchive,
+        alternates: site.locales.map((code) => ({
+          locale: code,
+          path: this.localePath(site, code, searchArchive.basePath),
+          current: code === locale,
+          flagUrl: flagUrl(code),
+        })),
+      };
+    }
 
     const archive = await this.tryArchive(site.id, path, page, locale, activeThemeKey);
     if (archive) {
@@ -874,6 +910,57 @@ export class RenderService {
       page,
       totalPages: Math.max(1, Math.ceil(total / ARCHIVE_PAGE_SIZE)),
     };
+  }
+
+  private async trySearch(
+    siteId: string,
+    path: string,
+    page: number,
+    locale: string,
+    activeThemeKey: string,
+    query: string,
+  ) {
+    if (path !== "/search") return null;
+
+    const where = {
+      siteId,
+      status: "PUBLISHED" as const,
+      locale,
+      AND: [
+        {
+          OR: [
+            { title: { contains: query, mode: "insensitive" as const } },
+            { slug: { contains: query, mode: "insensitive" as const } },
+            { excerpt: { contains: query, mode: "insensitive" as const } },
+          ],
+        },
+        { OR: [{ demoThemeKey: null }, { demoThemeKey: activeThemeKey }] },
+      ],
+    };
+
+    const [items, total] = await Promise.all([
+      db().content.findMany({
+        where,
+        include: CONTENT_INCLUDE,
+        orderBy: { publishedAt: "desc" },
+        skip: (page - 1) * ARCHIVE_PAGE_SIZE,
+        take: ARCHIVE_PAGE_SIZE,
+      }),
+      db().content.count({ where }),
+    ]);
+
+    return {
+      contentTypeKey: "search",
+      title: query ? `Search: ${query}` : "Search",
+      basePath: "/search",
+      items: items.map(toContentDto),
+      page,
+      totalPages: Math.max(1, Math.ceil(total / ARCHIVE_PAGE_SIZE)),
+    };
+  }
+
+  private normalizeSearchQuery(query: string | undefined): string {
+    return (query ?? "").trim().slice(0, 120);
   }
 
   /**

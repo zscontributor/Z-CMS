@@ -35,8 +35,15 @@ export class CacheService implements OnModuleDestroy {
    * Render keys carry the site's cache version. Bumping the version orphans
    * every key of the previous generation in one write — see `invalidateSite`.
    */
-  static renderKey(siteId: string, version: number, path: string, page: number): string {
-    return `cms:render:${siteId}:v${version}:${page}:${path}`;
+  static renderKey(
+    siteId: string,
+    version: number,
+    path: string,
+    page: number,
+    variant?: string,
+  ): string {
+    const suffix = variant ? `:${encodeURIComponent(variant)}` : "";
+    return `cms:render:${siteId}:v${version}:${page}:${path}${suffix}`;
   }
 
   static hostKey(hostname: string): string {

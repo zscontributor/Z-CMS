@@ -68,6 +68,7 @@ export const resolveRender = cache(
     hostname: string,
     path: string,
     page: number,
+    searchQuery?: string,
   ): Promise<RenderPayload | null> => {
     if (!hostname) return null;
 
@@ -76,6 +77,9 @@ export const resolveRender = cache(
     url.searchParams.set("hostname", hostname);
     url.searchParams.set("path", cleanPath);
     url.searchParams.set("page", String(page));
+    if (cleanPath === "/search" && searchQuery?.trim()) {
+      url.searchParams.set("q", searchQuery.trim());
+    }
 
     let response: Response;
     try {
@@ -186,5 +190,6 @@ export async function resolveDocumentPayload(): Promise<RenderPayload | null> {
     await currentHostname(),
     normalisePath(pathname),
     parsePageParam(search.get("page") ?? undefined),
+    search.get("q") ?? undefined,
   );
 }

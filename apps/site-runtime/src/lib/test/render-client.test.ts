@@ -76,6 +76,16 @@ describe("resolveRender", () => {
     expect((init?.headers as Record<string, string>)["X-Internal-Token"]).toBe(TOKEN);
   });
 
+  it("passes the search query through only for the search route", async () => {
+    const fetchMock = stubFetch(jsonResponse({ ok: true }));
+
+    await resolveRender("site.test", "/search", 1, " cms ");
+
+    const url = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("path")).toBe("/search");
+    expect(url.searchParams.get("q")).toBe("cms");
+  });
+
   it("tags the fetch so cms-api can purge exactly this page", async () => {
     const fetchMock = stubFetch(jsonResponse({ ok: true }));
 

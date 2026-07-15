@@ -51,7 +51,9 @@ async function resolveRoute(props: RouteProps): Promise<{
   const path = pathFromSlug(slug);
   const page = parsePageParam(search.page);
 
-  return { payload: await resolveRender(hostname, path, page), path, hostname };
+  const q = Array.isArray(search.q) ? search.q[0] : search.q;
+
+  return { payload: await resolveRender(hostname, path, page, q), path, hostname };
 }
 
 /**
@@ -238,7 +240,7 @@ export default async function CatchAllPage(props: RouteProps) {
 
   // Archive routes ("/blog") come back with `archive` set and `content` null.
   if (payload.archive) {
-    const Archive = templates.archive;
+    const Archive = path === "/search" ? templates.search ?? templates.archive : templates.archive;
 
     if (!Archive) {
       // A theme with no archive template cannot draw a listing. Falling through

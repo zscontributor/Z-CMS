@@ -306,6 +306,41 @@ describe("RenderService", () => {
       expect(archiveWhere.siteId).toBe("s1");
     });
 
+    it("renders /search as a filtered archive instead of a missing page", async () => {
+      cacheReturns({ host: publishedSite, render: null });
+      const result = publishedRow({ title: "CMS architecture", slug: "cms-architecture" });
+      holder.db.content.findMany.mockResolvedValue([result]);
+      holder.db.content.count.mockResolvedValue(1);
+
+      const out = await makeService().resolve("example.com", "/search", 1, " cms ");
+
+      expect(out.content).toBeNull();
+      expect(out.archive).toMatchObject({
+        contentTypeKey: "search",
+        title: "Search: cms",
+        basePath: "/search",
+        page: 1,
+        totalPages: 1,
+      });
+      expect(out.archive?.items[0]?.title).toBe("CMS architecture");
+      const searchWhere = holder.db.content.findMany.mock.calls[0][0].where;
+      expect(searchWhere).toMatchObject({
+        siteId: "s1",
+        status: "PUBLISHED",
+        locale: "en",
+        AND: [
+          {
+            OR: [
+              { title: { contains: "cms", mode: "insensitive" } },
+              { slug: { contains: "cms", mode: "insensitive" } },
+              { excerpt: { contains: "cms", mode: "insensitive" } },
+            ],
+          },
+          { OR: [{ demoThemeKey: null }, { demoThemeKey: "corp" }] },
+        ],
+      });
+    });
+
     it("resolves a locale-prefixed path in that locale", async () => {
       // "/vi/blog/hello" is the Vietnamese "/blog/hello"; the content lookup must
       // run in vi, or the archive/page silently serves the English row.

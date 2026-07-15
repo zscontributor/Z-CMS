@@ -26,6 +26,7 @@
     "verify:rls": "tsx prisma/verify-rls.ts",
     "seed:plugins": "tsx prisma/seed-plugins.ts",
     "seed:themes": "tsx prisma/seed-themes.ts",
+    "locales:enable": "tsx prisma/enable-locales.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

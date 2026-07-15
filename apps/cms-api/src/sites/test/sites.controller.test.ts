@@ -220,6 +220,30 @@ describe("create", () => {
     expect(site.create.mock.calls[0][0].data.locales).toEqual(["vi", "en"]);
   });
 
+  it("defaults a new site to the platform's three languages when none are named", async () => {
+    // A trilingual site out of the box is what lets the default theme's language
+    // switcher exist at all: on a single-locale site it renders nothing.
+    await controller().create(actor, {
+      name: "Acme",
+      slug: "acme",
+      hostname: "acme.test",
+      defaultLocale: "vi",
+    } as never);
+
+    expect(site.create.mock.calls[0][0].data.locales).toEqual(["vi", "en", "ja"]);
+  });
+
+  it("keeps a caller's own default locale alongside the three when it is a fourth", async () => {
+    await controller().create(actor, {
+      name: "Acme",
+      slug: "acme",
+      hostname: "acme.test",
+      defaultLocale: "fr",
+    } as never);
+
+    expect(site.create.mock.calls[0][0].data.locales).toEqual(["fr", "vi", "en", "ja"]);
+  });
+
   it("turns a hostname collision into a 409 that does not say whose site it is", async () => {
     // A hostname is unique across the whole PLATFORM, so the clash may be with a
     // tenant the caller cannot see. Confirming that would leak its existence.

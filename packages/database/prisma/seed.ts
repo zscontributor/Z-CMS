@@ -138,7 +138,7 @@ async function main() {
       name: "Z-SOFT Website",
       status: "PUBLISHED",
       defaultLocale: "en",
-      locales: ["en", "vi"],
+      locales: ["en", "vi", "ja"],
     },
   });
 
@@ -238,11 +238,13 @@ async function main() {
   // Fixed ids so the seed is idempotent: re-running it must not fork a page into
   // two groups and quietly break the link between its languages.
   //
-  // Each page below is seeded twice, in English and Vietnamese, sharing a group.
-  // The Vietnamese slugs are deliberately *different* — "/about" is "/vi/gioi-thieu",
-  // not "/vi/about". That is the point of the group: a translated URL that still
-  // reads as English is not a translated URL, and nothing in the router depends on
-  // the two slugs matching.
+  // Each page below is seeded three times — English, Vietnamese and Japanese —
+  // sharing a group. The translated slugs are deliberately *different*: "/about" is
+  // "/vi/gioi-thieu" and "/ja/gaiyou", not "/vi/about". That is the point of the
+  // group: a translated URL that still reads as English is not a translated URL, and
+  // nothing in the router depends on the slugs matching. Three published siblings in
+  // a group is also what makes the theme's language switcher appear — it renders only
+  // when `ctx.alternates` has more than one entry, one per locale the page exists in.
   const GROUP = {
     home: "0e9c1b6a-0000-4000-8000-000000000001",
     about: "0e9c1b6a-0000-4000-8000-000000000002",
@@ -472,6 +474,127 @@ async function main() {
           type: "core/richtext",
           props: {
             html: "<p>Bài viết mẫu. Giao diện quyết định cách hiển thị; CMS chỉ cung cấp dữ liệu.</p>",
+          },
+        },
+      ],
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // The same three pages, in Japanese.
+  //
+  // Served under /ja, again with slugs that read as the language rather than as
+  // English:
+  //
+  //   /               <->  /ja
+  //   /about          <->  /ja/gaiyou
+  //   /blog/hello-world <-> /ja/blog/konnichiwa
+  //
+  // Sharing the same translation groups as the English and Vietnamese pages, so all
+  // three are one page in three languages and the switcher can move between them.
+  // ---------------------------------------------------------------------------
+
+  await upsertNormalContent({
+    siteId: site.id,
+    locale: "ja",
+    slug: "",
+    update: { translationGroupId: GROUP.home },
+    create: {
+      translationGroupId: GROUP.home,
+      tenantId: tenant.id,
+      siteId: site.id,
+      contentTypeId: page.id,
+      locale: "ja",
+      slug: "",
+      title: "ホーム",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      authorId: owner.id,
+      seo: { title: "Z-SOFT — CMS プラットフォーム", description: "Z-CMS のデモ。" },
+      blocks: [
+        {
+          id: "hero-1-ja",
+          type: "core/hero",
+          props: {
+            heading: "Z-CMS",
+            subheading: "テーマとプラグインのマーケットプレイスを備えたマルチテナント CMS",
+            ctaLabel: "ブログを読む",
+            ctaHref: "/blog",
+          },
+        },
+        {
+          id: "rich-1-ja",
+          type: "core/richtext",
+          props: {
+            html: "<p>このページは <strong>デフォルトテーマ</strong> が CMS API のデータから描画しています。ページ上のすべてのブロックは Postgres に JSON として保存されています。</p>",
+          },
+        },
+        {
+          id: "features-1-ja",
+          type: "core/features",
+          props: {
+            heading: "アーキテクチャ",
+            items: [
+              { title: "マルチテナント", body: "データは Postgres の行単位セキュリティで分離されています。" },
+              { title: "テーマエンジン", body: "テーマは manifest で記述された独立したパッケージです。" },
+              { title: "プラグインサンドボックス", body: "マーケットプレイスのプラグインはコアプロセスの外で動作します。" },
+            ],
+          },
+        },
+      ],
+    },
+  });
+
+  await upsertNormalContent({
+    siteId: site.id,
+    locale: "ja",
+    slug: "gaiyou",
+    update: { translationGroupId: GROUP.about },
+    create: {
+      translationGroupId: GROUP.about,
+      tenantId: tenant.id,
+      siteId: site.id,
+      contentTypeId: page.id,
+      locale: "ja",
+      slug: "gaiyou",
+      title: "概要",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      authorId: owner.id,
+      blocks: [
+        {
+          id: "rich-2-ja",
+          type: "core/richtext",
+          props: { html: "<p>Z-SOFT株式会社 — Z-CMS を開発している会社です。</p>" },
+        },
+      ],
+    },
+  });
+
+  await upsertNormalContent({
+    siteId: site.id,
+    locale: "ja",
+    slug: "konnichiwa",
+    update: { translationGroupId: GROUP.hello },
+    create: {
+      translationGroupId: GROUP.hello,
+      tenantId: tenant.id,
+      siteId: site.id,
+      contentTypeId: post.id,
+      locale: "ja",
+      slug: "konnichiwa",
+      title: "こんにちは",
+      excerpt: "/blog/:slug ルートとアーカイブを試すためのサンプル記事です。",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      authorId: owner.id,
+      data: { readingTime: 3 },
+      blocks: [
+        {
+          id: "rich-3-ja",
+          type: "core/richtext",
+          props: {
+            html: "<p>サンプル記事です。表示方法はテーマが決め、CMS はデータのみを提供します。</p>",
           },
         },
       ],

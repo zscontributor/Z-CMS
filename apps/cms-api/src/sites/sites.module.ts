@@ -40,6 +40,18 @@ const SITE_INCLUDE = {
 } as const;
 
 /**
+ * The languages a new Z-CMS site ships in when the caller does not name its own.
+ *
+ * Vietnamese first — it is also the default `defaultLocale` — then English and
+ * Japanese, the three the platform is translated into out of the box. A trilingual
+ * site is what lets the default theme's language switcher exist from day one; on a
+ * single-locale site it renders nothing, because there is nowhere to switch to.
+ * `create()` still guarantees the site's own `defaultLocale` is in the list, so a
+ * caller who picks a fourth language as default keeps it alongside these.
+ */
+const DEFAULT_SITE_LOCALES = ["vi", "en", "ja"] as const;
+
+/**
  * A site's brand lives in `Site.settings`, under a `brand` key.
  *
  * The column already existed and nothing read it, so a site's colour and logo cost
@@ -198,7 +210,7 @@ export class SitesController {
     @Actor() actor: RequestActor,
     @Body(new ZodValidationPipe(CreateSiteSchema)) body: z.infer<typeof CreateSiteSchema>,
   ): Promise<SiteDto> {
-    const locales = body.locales ?? [body.defaultLocale];
+    const locales = body.locales ?? [...DEFAULT_SITE_LOCALES];
 
     // The default locale has to be one the site actually publishes in, or every URL
     // on the site resolves to a language it does not have.

@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { db, getSystemDb } from "@zcmsorg/database";
+import { db, getSystemDb, withTenant } from "@zcmsorg/database";
 import { CreateContentSchema, UpdateContentSchema, type Permission } from "@zcmsorg/schemas";
 import { Actor, Internal, RequirePermissions, SiteId, SiteScoped } from "../auth/decorators";
 import { RateLimit } from "../common/rate-limit.decorator";
@@ -99,6 +99,7 @@ export class AiService {
 
     const clean = this.sanitise(messages);
     const systemPrompt = await this.buildGroundedPrompt(
+      domain.site.tenantId,
       domain.site.id,
       clean,
       "public",
@@ -120,7 +121,12 @@ export class AiService {
       select: { id: true, key: true, name: true, fields: true },
     });
     const clean = this.sanitise(messages);
-    const siteContext = await this.buildGroundedPrompt(siteId, clean, "admin");
+    const siteContext = await this.buildGroundedPrompt(
+      actor.tenantId,
+      siteId,
+      clean,
+      "admin",
+    );
 
     const instruction = [
       "You are the Z-CMS admin content operator.",
@@ -189,16 +195,20 @@ export class AiService {
   }
 
   private async buildGroundedPrompt(
+    tenantId: string,
     siteId: string,
     messages: ChatMessage[],
     scope: ContentContextScope,
     hostname?: string,
   ): Promise<string> {
     const query = messages.at(-1)?.content ?? "";
-    const [rows, docsRows] = await Promise.all([
-      this.findRelevantContent(siteId, query, scope),
-      this.shouldIncludeZcmsDocs(hostname, query) ? this.findRelevantDocs(query) : Promise.resolve([]),
-    ]);
+    const [rows, docsRows] = await withTenant(tenantId, async () => {
+      const [rows, docsRows] = await Promise.all([
+        this.findRelevantContent(siteId, query, scope),
+        this.shouldIncludeZcmsDocs(hostname, query) ? this.findRelevantDocs(query) : Promise.resolve([]),
+      ]);
+      return [rows, docsRows] as const;
+    });
     const sourceRule = scope === "public"
       ? "Use only the public context below and the conversation. The context contains PUBLISHED site content only."
       : "Use only the admin-visible context below and the conversation. Do not reveal or act on data outside this site.";

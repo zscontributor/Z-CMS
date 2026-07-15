@@ -1,7 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const holder = vi.hoisted(() => ({ systemDb: null as any, tenantDb: null as any }));
-vi.mock("@zcmsorg/database", () => ({ getSystemDb: () => holder.systemDb, db: () => holder.tenantDb }));
+const holder = vi.hoisted(() => ({
+  systemDb: null as any,
+  tenantDb: null as any,
+  withTenant: vi.fn(async (tenantId: string, fn: (ctx: { tenantId: string; db: any }) => Promise<any>) =>
+    fn({ tenantId, db: holder.tenantDb })),
+}));
+vi.mock("@zcmsorg/database", () => ({
+  getSystemDb: () => holder.systemDb,
+  db: () => holder.tenantDb,
+  withTenant: (...args: Parameters<typeof holder.withTenant>) => holder.withTenant(...args),
+}));
 import { AiController, AiService, IntegrationController } from "../ai.module";
 
 const actor = {
@@ -28,6 +37,9 @@ function setup() {
   const plugins = { callCapability: vi.fn() };
   const service = new AiService(contents as any, plugins as any);
   holder.systemDb = { sitePlugin: { findFirst: vi.fn().mockResolvedValue({ settings: enabled }) } };
+  holder.withTenant.mockClear();
+  holder.withTenant.mockImplementation(async (_tenantId: string, fn: (ctx: { tenantId: string; db: any }) => Promise<any>) =>
+    fn({ tenantId: "t1", db: holder.tenantDb }));
   holder.tenantDb = {
     contentType: { findMany: vi.fn().mockResolvedValue(types) },
     siteTheme: { findFirst: vi.fn().mockResolvedValue({ theme: { key: "default" } }) },
@@ -125,6 +137,7 @@ describe("core holds no provider key", () => {
     const res = await service.chat("example.com", [{ role: "user", content: "Hi" }]);
 
     expect(res).toEqual({ answer: "Xin chào", provider: "gemini" });
+    expect(holder.withTenant).toHaveBeenCalledWith("t1", expect.any(Function));
     expect(plugins.callCapability).toHaveBeenCalledWith(
       "t1", "s1", "ai.assistant", "chat",
       {

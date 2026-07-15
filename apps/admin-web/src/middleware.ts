@@ -86,13 +86,14 @@ export async function middleware(request: NextRequest) {
 function csp(nonce: string): string {
   const api = cspOrigin(process.env.CMS_API_PUBLIC_URL ?? process.env.CMS_API_URL);
   const s3 = cspOrigin(process.env.S3_PUBLIC_URL);
+  const siteRuntime = cspOrigin(process.env.SITE_RUNTIME_URL);
   const dev = process.env.NODE_ENV !== "production";
 
   return [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
     `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' data: blob: ${s3}`.trim(),
+    `img-src 'self' data: blob: ${s3} ${siteRuntime}`.trim(),
     `font-src 'self' data:`,
     // Server actions are same-origin; the API is called from the client only
     // through same-origin route handlers, but allow it explicitly for safety.

@@ -195,6 +195,28 @@ const inFlight = new Map<string, Promise<LoadedTheme>>();
 
 export type ThemeOrigin = "BUILTIN" | "MARKETPLACE" | "SIDELOAD";
 
+/**
+ * Verifies and unpacks a theme so its declared media can be served without importing
+ * and executing the theme module. The asset route uses this for Appearance previews:
+ * looking at a screenshot must never execute a theme the user has not activated.
+ */
+export async function ensureThemeAssets(
+  key: string,
+  version: string,
+  origin?: ThemeOrigin,
+  checksum?: string,
+): Promise<void> {
+  const builtIn = key === DEFAULT_KEY || builtinThemeKeys().includes(key);
+
+  if (builtIn) {
+    await loadBuiltinBundle(key);
+  } else if (origin === "SIDELOAD") {
+    await loadOperatorBundle(key, version, checksum);
+  } else {
+    await loadMarketplaceBundle(key, version, checksum);
+  }
+}
+
 export async function loadTheme(
   key: string,
   version: string,

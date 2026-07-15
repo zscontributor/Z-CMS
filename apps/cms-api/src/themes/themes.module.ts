@@ -53,6 +53,7 @@ export interface CatalogTheme {
   description: string | null;
   author: string;
   isCore: boolean;
+  screenshots: string[];
   versions: { version: string; origin: string; reviewStatus: string }[];
 }
 
@@ -69,6 +70,40 @@ export interface InstalledTheme {
   settingsSchema: unknown;
   demoAvailable: boolean;
   demoSeeded: boolean;
+  screenshots: string[];
+}
+
+function screenshotUrls(
+  key: string,
+  version: string,
+  origin: string,
+  checksum: string | null,
+  manifest: Record<string, unknown> | null,
+): string[] {
+  const media = manifest?.media as { screenshots?: unknown } | undefined;
+  if (!Array.isArray(media?.screenshots)) return [];
+
+  const runtime = process.env.SITE_RUNTIME_URL ?? "http://localhost:3100";
+  return media.screenshots
+    .filter((value): value is string => typeof value === "string")
+    .filter((value) => {
+      const parts = value.split("/");
+      return (
+        parts.length > 0 &&
+        parts.every((part) => part.length > 0 && part !== "." && part !== "..") &&
+        /\.(?:png|jpe?g|webp)$/i.test(value)
+      );
+    })
+    .slice(0, 3)
+    .map((file) => {
+      const assetPath = [key, version, ...file.split("/")]
+        .map(encodeURIComponent)
+        .join("/");
+      const url = new URL(`/theme-assets/${assetPath}`, runtime);
+      url.searchParams.set("origin", origin);
+      if (checksum) url.searchParams.set("checksum", checksum);
+      return url.toString();
+    });
 }
 
 interface ThemeDemoMenuItem {
@@ -139,21 +174,43 @@ export class ThemesController {
     const themes = await getSystemDb().theme.findMany({
       include: {
         versions: {
-          select: { version: true, origin: true, reviewStatus: true },
+          select: {
+            version: true,
+            origin: true,
+            reviewStatus: true,
+            checksum: true,
+            manifest: true,
+          },
           orderBy: { createdAt: "desc" },
         },
       },
       orderBy: { name: "asc" },
     });
 
-    return themes.map((t) => ({
-      key: t.key,
-      name: t.name,
-      description: t.description,
-      author: t.author,
-      isCore: t.isCore,
-      versions: t.versions,
-    }));
+    return themes.map((theme) => {
+      const latest = theme.versions[0];
+      return {
+        key: theme.key,
+        name: theme.name,
+        description: theme.description,
+        author: theme.author,
+        isCore: theme.isCore,
+        screenshots: latest
+          ? screenshotUrls(
+              theme.key,
+              latest.version,
+              latest.origin,
+              latest.checksum,
+              latest.manifest as Record<string, unknown>,
+            )
+          : [],
+        versions: theme.versions.map(({ version, origin, reviewStatus }) => ({
+          version,
+          origin,
+          reviewStatus,
+        })),
+      };
+    });
   }
 
   @Get("installed")
@@ -205,6 +262,13 @@ export class ThemesController {
         settingsSchema: manifest?.settingsSchema ?? null,
         demoAvailable: Boolean(manifest?.demo),
         demoSeeded: seededKeys.has(row.theme.key),
+        screenshots: screenshotUrls(
+          row.theme.key,
+          row.version.version,
+          row.version.origin,
+          row.version.checksum,
+          manifest,
+        ),
       };
     });
   }

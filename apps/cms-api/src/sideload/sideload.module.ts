@@ -32,6 +32,8 @@ import {
   openPackage,
   unzipToDir,
   verifyOperator,
+  PackageError,
+  type PackageErrorCode,
   type PackageEnvelope,
 } from "@zcmsorg/package";
 import { scanPackage, type ScanReport } from "@zcmsorg/scanner";
@@ -55,6 +57,20 @@ const MAX_PACKAGE_LABEL = `${MAX_PACKAGE_BYTES / (1024 * 1024)}MB`;
 const RESERVED_ID_PREFIX = "vn.zsoft.";
 
 type Kind = "theme" | "plugin";
+
+function operatorVerificationReason(error: unknown): string {
+  if (!(error instanceof PackageError)) return (error as Error).message;
+
+  const keys = {
+    operator_key_missing: "errors.sideload.operatorKeyMissing",
+    operator_checksum_mismatch: "errors.sideload.operatorChecksumMismatch",
+    operator_signature_missing: "errors.sideload.operatorSignatureMissing",
+    operator_signature_invalid: "errors.sideload.operatorSignatureInvalid",
+  } satisfies Record<PackageErrorCode, string>;
+  const key = error.code ? keys[error.code] : undefined;
+
+  return key ? t()(key) : error.message;
+}
 
 /**
  * Sideloading — installing a theme or plugin FROM A FILE, without the marketplace.
@@ -193,7 +209,7 @@ export class SideloadService {
       verifyOperator(envelope, payload, pinned);
     } catch (err) {
       throw new BadRequestException(
-        t()("errors.sideload.unverified", { reason: (err as Error).message }),
+        t()("errors.sideload.unverified", { reason: operatorVerificationReason(err) }),
       );
     }
 

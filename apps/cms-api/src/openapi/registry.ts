@@ -466,6 +466,7 @@ const CatalogThemeSchema = z.object({
   description: z.string().nullable(),
   author: z.string(),
   isCore: z.boolean(),
+  screenshots: z.array(z.url()).max(MAX_SCREENSHOTS),
   versions: z.array(
     z.object({ version: z.string(), origin: z.string(), reviewStatus: z.string() }),
   ),
@@ -482,6 +483,7 @@ const InstalledThemeSchema = z.object({
   settingsSchema: z.unknown(),
   demoAvailable: z.boolean(),
   demoSeeded: z.boolean(),
+  screenshots: z.array(z.url()).max(MAX_SCREENSHOTS),
 });
 
 /**

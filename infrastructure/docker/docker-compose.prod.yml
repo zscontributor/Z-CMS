@@ -226,6 +226,7 @@ services:
       PORT: "3001"
       # The admin talks to the API from the server side over the compose network.
       CMS_API_URL: http://cms-api:4100
+      SITE_RUNTIME_URL: ${SITE_RUNTIME_URL:-http://localhost:3000}
       # The origin media is served from, for the admin's own img-src. Without it
       # the CSP blocks every thumbnail in the media library.
       S3_PUBLIC_URL: ${S3_PUBLIC_URL:?set S3_PUBLIC_URL in the environment}

@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/ui/table";
+import { MediaGallery } from "@/components/ui/media-gallery";
 import { getT } from "@/lib/locale";
 import { SideloadActions, SideloadUpload } from "@/components/sideload-controls";
 import { ActivateButton } from "./activate-button";
@@ -76,6 +77,11 @@ export default async function AppearancePage() {
                     : "z-card p-4"
                 }
               >
+                <MediaGallery
+                  screenshots={theme.screenshots}
+                  name={theme.name}
+                  className="mb-3"
+                />
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <h2 className="truncate text-sm font-semibold">{theme.name}</h2>
@@ -118,6 +124,11 @@ export default async function AppearancePage() {
                 const approved = theme.reviewStatus === "APPROVED";
                 return (
                   <article key={theme.key} className="z-card border-amber-300/60 p-4 dark:border-amber-800/60">
+                    <MediaGallery
+                      screenshots={theme.screenshots}
+                      name={theme.name}
+                      className="mb-3"
+                    />
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className="truncate text-sm font-semibold">{theme.name}</h3>
@@ -193,6 +204,11 @@ export default async function AppearancePage() {
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {available.map((entry) => (
               <article key={entry.key} className="z-card p-4">
+                <MediaGallery
+                  screenshots={entry.screenshots}
+                  name={entry.name}
+                  className="mb-3"
+                />
                 <h3 className="text-sm font-semibold">{entry.name}</h3>
                 <p className="mt-0.5 text-[11px] z-muted">
                   {entry.author} · v{entry.versions[entry.versions.length - 1]?.version ?? "—"}

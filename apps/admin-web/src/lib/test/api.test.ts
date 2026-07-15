@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, SITE_COOKIE } from "../cookies";
+import { LOCALE_COOKIE } from "../locale";
 
 // The request-scoped cookie store the mocked next/headers reads and writes.
 const { cookieJar } = vi.hoisted(() => ({ cookieJar: new Map<string, string>() }));
@@ -49,6 +50,7 @@ beforeEach(() => {
 describe("apiFetch", () => {
   it("attaches the access token and the site header, and returns the parsed body", async () => {
     cookieJar.set(ACCESS_TOKEN_COOKIE, "access-123");
+    cookieJar.set(LOCALE_COOKIE, "vi");
     fetchMock.mockResolvedValueOnce(jsonResponse({ id: "c1" }));
 
     const result = await apiFetch<{ id: string }>("/contents/c1");
@@ -58,6 +60,7 @@ describe("apiFetch", () => {
     const headers = new Headers(init.headers as HeadersInit);
     expect(headers.get("authorization")).toBe("Bearer access-123");
     expect(headers.get("x-site-id")).toBe("site-1");
+    expect(headers.get("accept-language")).toBe("vi");
   });
 
   it("omits the Authorization header for an anonymous request", async () => {

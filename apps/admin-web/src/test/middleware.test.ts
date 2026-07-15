@@ -126,6 +126,16 @@ describe("middleware", () => {
     );
   });
 
+  it("allows the site runtime in img-src, so theme screenshots can be seen", async () => {
+    vi.stubEnv("SITE_RUNTIME_URL", "https://sites.example.org");
+
+    const response = await middleware(request("/appearance", { [ACCESS_TOKEN_COOKIE]: "at" }));
+
+    expect(response.headers.get("content-security-policy")).toContain(
+      "https://sites.example.org",
+    );
+  });
+
   it("drops the internal API host from connect-src rather than emitting an invalid source", async () => {
     // "z-cms_cms-api" is a Swarm service name. The underscore is not legal in a CSP
     // host-source, so the browser rejects the token and logs an error; the host is

@@ -86,9 +86,18 @@ export interface SignedPackage {
   payload: Buffer;
 }
 
+export type PackageErrorCode =
+  | "operator_key_missing"
+  | "operator_checksum_mismatch"
+  | "operator_signature_missing"
+  | "operator_signature_invalid";
+
 export class PackageError extends Error {
-  constructor(message: string) {
+  readonly code?: PackageErrorCode;
+
+  constructor(message: string, code?: PackageErrorCode) {
     super(message);
     this.name = "PackageError";
+    this.code = code;
   }
 }

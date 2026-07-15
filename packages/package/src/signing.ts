@@ -190,6 +190,7 @@ export function verifyOperator(
   if (!pinnedOperatorKeyPem) {
     throw new PackageError(
       "No operator public key is pinned — refusing to run an unverified sideloaded package.",
+      "operator_key_missing",
     );
   }
 
@@ -197,12 +198,14 @@ export function verifyOperator(
   if (actual !== envelope.checksum) {
     throw new PackageError(
       `Checksum mismatch — the sideloaded package has been modified.\n  declared: ${envelope.checksum}\n  actual  : ${actual}`,
+      "operator_checksum_mismatch",
     );
   }
 
   if (!envelope.operatorSignature) {
     throw new PackageError(
       "This package carries no operator signature. It did not arrive by the sideload route and will not be run as one.",
+      "operator_signature_missing",
     );
   }
 
@@ -216,6 +219,7 @@ export function verifyOperator(
   if (!ok) {
     throw new PackageError(
       "Invalid operator signature. This sideloaded package was not signed by the operator of this instance.",
+      "operator_signature_invalid",
     );
   }
 }

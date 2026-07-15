@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { ensureThemeAssets, type ThemeOrigin } from "@/lib/theme-loader";
 
 /**
  * Serves a theme's own assets (its compiled CSS, its images) out of the verified
@@ -56,7 +57,7 @@ function cacheRoot(): string {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ path: string[] }> },
 ) {
   const { path: segments } = await context.params;
@@ -76,6 +77,23 @@ export async function GET(
   // agree on where a bundle lives.
   const safe = (s: string) => s.replace(/[^a-zA-Z0-9._-]/g, "_");
   const dir = path.join(cacheRoot(), "theme", safe(key), safe(version));
+
+  if (!fs.existsSync(path.join(dir, ".zcms-verified"))) {
+    const search = new URL(request.url).searchParams;
+    const requestedOrigin = search.get("origin");
+    const origin: ThemeOrigin | undefined =
+      requestedOrigin === "BUILTIN" ||
+      requestedOrigin === "MARKETPLACE" ||
+      requestedOrigin === "SIDELOAD"
+        ? requestedOrigin
+        : undefined;
+
+    try {
+      await ensureThemeAssets(key, version, origin, search.get("checksum") ?? undefined);
+    } catch {
+      return new NextResponse("Not found", { status: 404 });
+    }
+  }
 
   if (!fs.existsSync(path.join(dir, ".zcms-verified"))) {
     return new NextResponse("Not found", { status: 404 });

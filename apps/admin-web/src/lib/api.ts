@@ -22,7 +22,7 @@ import {
   accessCookieOptions,
   refreshCookieOptions,
 } from "./cookies";
-import { getT } from "./locale";
+import { getLocale, getT } from "./locale";
 import type { ThemeSettingsSchema } from "./theme-schema";
 
 export const API_URL = process.env.CMS_API_URL ?? "http://localhost:4100";
@@ -156,10 +156,12 @@ async function send(
   url: string,
   accessToken: string | undefined,
   siteId: string | undefined,
+  locale: string,
   options: RequestOptions,
 ): Promise<Response> {
   const headers = new Headers();
   headers.set("Accept", "application/json");
+  headers.set("Accept-Language", locale);
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
   if (siteId) headers.set("X-Site-Id", siteId);
 
@@ -187,6 +189,7 @@ async function send(
  */
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const url = buildUrl(path, options.query);
+  const locale = await getLocale();
 
   const siteScoped = options.siteScoped ?? true;
   let siteId: string | undefined;
@@ -195,7 +198,7 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   }
 
   let accessToken = options.anonymous ? undefined : await readCookie(ACCESS_TOKEN_COOKIE);
-  let res = await send(url, accessToken, siteId, options);
+  let res = await send(url, accessToken, siteId, locale, options);
 
   if (res.status === 401 && !options.anonymous) {
     const refreshToken = await readCookie(REFRESH_TOKEN_COOKIE);
@@ -209,7 +212,7 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
 
     // A FormData body is a one-shot stream in some runtimes; it is safe here
     // because we hand fetch the same FormData object, which is re-readable.
-    res = await send(url, accessToken, siteId, options);
+    res = await send(url, accessToken, siteId, locale, options);
     if (res.status === 401) throw await sessionExpired();
   }
 
@@ -406,6 +409,7 @@ export interface InstalledThemeDto {
   settingsSchema: ThemeSettingsSchema | null;
   demoAvailable: boolean;
   demoSeeded: boolean;
+  screenshots: string[];
 }
 
 export interface ThemeCatalogEntry {
@@ -413,6 +417,7 @@ export interface ThemeCatalogEntry {
   name: string;
   description: string;
   author: string;
+  screenshots: string[];
   versions: { version: string; origin: PackageOrigin; reviewStatus: string }[];
 }
 

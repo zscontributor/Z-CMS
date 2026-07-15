@@ -291,9 +291,17 @@ describe("verifyOperator", () => {
     const { envelope, payload, operator } = operatorPackage();
     delete envelope.operatorSignature;
 
-    expect(() => verifyOperator(envelope, payload, operator.publicKey)).toThrow(
-      /no operator signature/,
-    );
+    const error = (() => {
+      try {
+        verifyOperator(envelope, payload, operator.publicKey);
+      } catch (caught) {
+        return caught;
+      }
+    })();
+
+    expect(error).toBeInstanceOf(PackageError);
+    expect((error as PackageError).message).toMatch(/no operator signature/);
+    expect((error as PackageError).code).toBe("operator_signature_missing");
   });
 
   it("rejects a package signed by a key this instance does not pin", () => {

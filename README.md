@@ -66,6 +66,8 @@ pnpm --filter @zcmsorg/plugin-runtime dev  # http://localhost:4200   plugin sand
 Sign in at `http://localhost:3101` with **`admin@z-cms.org` / `admin123`**.
 In production, mount admin-web under each site's origin as `/admin`
 (for example `https://z-cms.org/admin`), not on a separate `admin.*` hostname.
+Your reverse proxy must route `/admin` and `/admin/*` to admin-web; everything
+else on the site origin goes to site-runtime.
 
 Background jobs (image variants, mail, sitemaps, the marketplace revocation feed) need
 the worker as well:

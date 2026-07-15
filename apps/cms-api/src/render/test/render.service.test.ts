@@ -328,17 +328,118 @@ describe("RenderService", () => {
         siteId: "s1",
         status: "PUBLISHED",
         locale: "en",
-        AND: [
-          {
-            OR: [
-              { title: { contains: "cms", mode: "insensitive" } },
-              { slug: { contains: "cms", mode: "insensitive" } },
-              { excerpt: { contains: "cms", mode: "insensitive" } },
-            ],
-          },
-          { OR: [{ demoThemeKey: null }, { demoThemeKey: "corp" }] },
-        ],
+        OR: [{ demoThemeKey: null }, { demoThemeKey: "corp" }],
       });
+    });
+
+    it("includes matching active-theme demo content that has not been seeded into the DB", async () => {
+      cacheReturns({ host: publishedSite, render: null });
+      holder.db.siteTheme.findFirst.mockResolvedValue({
+        theme: { key: "corp" },
+        version: {
+          version: "1.0.0",
+          manifest: {
+            demo: {
+              contentTypes: [
+                { key: "page", name: "Page", routePrefix: "" },
+                { key: "post", name: "Post", routePrefix: "blog" },
+              ],
+              contents: [
+                {
+                  contentType: "page",
+                  locale: "en",
+                  slug: "static-features",
+                  title: "Static CMS features",
+                  blocks: [{ type: "core/richtext", props: { html: "<p>CMS from theme demo</p>" } }],
+                },
+                {
+                  contentType: "post",
+                  locale: "vi",
+                  slug: "cms-vi",
+                  title: "Không cùng locale",
+                },
+              ],
+            },
+          },
+        },
+        settings: {},
+      });
+
+      const out = await makeService().resolve("example.com", "/search", 1, "theme demo");
+
+      expect(out.archive?.items.map((item) => item.path)).toContain("/static-features");
+      expect(out.archive?.items.find((item) => item.path === "/static-features")).toMatchObject({
+        title: "Static CMS features",
+        contentType: { key: "page", name: "Page" },
+      });
+    });
+
+    it('finds phrases inside seeded block HTML such as "Why another CMS"', async () => {
+      cacheReturns({ host: publishedSite, render: null });
+      holder.db.content.findMany.mockResolvedValue([
+        publishedRow({
+          title: "About Z-CMS",
+          slug: "about",
+          contentType: { id: "ct-page", key: "page", name: "Page", routePrefix: "" },
+          blocks: [
+            {
+              type: "core/richtext",
+              props: {
+                html: "<h2>Why another CMS</h2><p>Most content platforms make you choose.</p>",
+              },
+            },
+          ],
+        }),
+      ]);
+      holder.db.content.count.mockResolvedValue(1);
+
+      const out = await makeService().resolve("example.com", "/search", 1, "Why another CMS");
+
+      expect(out.archive?.items.map((item) => item.path)).toContain("/about");
+      expect(out.archive?.items.find((item) => item.path === "/about")?.title).toBe(
+        "About Z-CMS",
+      );
+    });
+
+    it("does not duplicate theme demo content already returned from the DB", async () => {
+      cacheReturns({ host: publishedSite, render: null });
+      holder.db.siteTheme.findFirst.mockResolvedValue({
+        theme: { key: "corp" },
+        version: {
+          version: "1.0.0",
+          manifest: {
+            demo: {
+              contentTypes: [{ key: "page", name: "Page", routePrefix: "" }],
+              contents: [
+                {
+                  contentType: "page",
+                  locale: "en",
+                  slug: "features",
+                  title: "Features from package",
+                  blocks: [{ type: "core/richtext", props: { html: "<p>cms</p>" } }],
+                },
+              ],
+            },
+          },
+        },
+        settings: {},
+      });
+      holder.db.content.findMany.mockResolvedValue([
+        publishedRow({
+          title: "Features from database",
+          slug: "features",
+          contentType: { id: "ct-page", key: "page", name: "Page", routePrefix: "" },
+          blocks: [{ type: "core/richtext", props: { html: "<p>cms</p>" } }],
+        }),
+      ]);
+      holder.db.content.count.mockResolvedValue(1);
+
+      const out = await makeService().resolve("example.com", "/search", 1, "cms");
+
+      expect(out.archive?.items.filter((item) => item.path === "/features")).toHaveLength(1);
+      expect(out.archive?.items.find((item) => item.path === "/features")?.title).toBe(
+        "Features from database",
+      );
     });
 
     it("resolves a locale-prefixed path in that locale", async () => {

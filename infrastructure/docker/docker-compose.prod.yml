@@ -220,6 +220,8 @@ services:
     build:
       <<: *build-context
       target: admin-web
+      args:
+        ADMIN_BASE_PATH: ${ADMIN_BASE_PATH:-/admin}
     container_name: zcms-admin-web
     restart: unless-stopped
     environment:

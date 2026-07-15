@@ -36,6 +36,8 @@ WORKDIR /repo
 # (nest cli, tsc, next), and setting it to production would drop them.
 # ---------------------------------------------------------------------------
 FROM base AS build
+ARG ADMIN_BASE_PATH=/admin
+ENV ADMIN_BASE_PATH=${ADMIN_BASE_PATH}
 RUN apt-get update \
  && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
  && rm -rf /var/lib/apt/lists/*

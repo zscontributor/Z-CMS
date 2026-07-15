@@ -63,6 +63,8 @@ pnpm --filter @zcmsorg/worker dev           # バックグラウンドジョブ
 ログインできます。
 本番環境では admin-web を各サイトの同一オリジン配下の `/admin`
 （例: `https://z-cms.org/admin`）に配置し、`admin.*` の別ホスト名は使いません。
+リバースプロキシでは `/admin` と `/admin/*` を admin-web に転送し、
+同じサイトオリジンのその他のパスは site-runtime に転送します。
 
 > 開発環境のポートは 3100 / 3101 / 4100 です。`domains` テーブルの hostname は
 > site-runtime のポート（`localhost:3100`）と一致させてください。

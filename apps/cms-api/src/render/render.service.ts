@@ -40,6 +40,7 @@ const ARCHIVE_PAGE_SIZE = 10;
  */
 const MAX_THEME_COLLECTIONS = 8;
 const MAX_CONTENT_LIST_BLOCKS = 8;
+const MAX_SEARCH_SCAN = 200;
 
 /** `sort` -> the only orderings a caller may ask for. Nothing else is expressible. */
 const COLLECTION_ORDER_BY: Record<CollectionSort, Record<string, "asc" | "desc">> = {
@@ -76,6 +77,34 @@ interface ResolvedSite {
    * that buys nothing.
    */
   brand: SiteBrand;
+}
+
+interface SearchableThemeManifest {
+  id?: string;
+  name?: string;
+  description?: string;
+  settingsSchema?: unknown;
+  demo?: {
+    settings?: Record<string, unknown>;
+    contentTypes?: {
+      key: string;
+      name?: string;
+      routePrefix?: string;
+      isRoutable?: boolean;
+    }[];
+    contents?: {
+      contentType: string;
+      locale: string;
+      slug: string;
+      title: string;
+      excerpt?: string;
+      data?: Record<string, unknown>;
+      blocks?: unknown[];
+      seo?: Record<string, unknown>;
+      status?: string;
+      publishedAt?: string;
+    }[];
+  };
 }
 
 /** Every item in a menu, parents and children alike, as one flat list. */
@@ -288,6 +317,7 @@ export class RenderService {
       locale,
       activeThemeKey,
       searchQuery,
+      (themeRow.version as { manifest?: unknown } | null)?.manifest,
     );
     if (searchArchive) {
       return {
@@ -919,6 +949,7 @@ export class RenderService {
     locale: string,
     activeThemeKey: string,
     query: string,
+    themeManifest: unknown,
   ) {
     if (path !== "/search") return null;
 
@@ -926,34 +957,39 @@ export class RenderService {
       siteId,
       status: "PUBLISHED" as const,
       locale,
-      AND: [
-        {
-          OR: [
-            { title: { contains: query, mode: "insensitive" as const } },
-            { slug: { contains: query, mode: "insensitive" as const } },
-            { excerpt: { contains: query, mode: "insensitive" as const } },
-          ],
-        },
-        { OR: [{ demoThemeKey: null }, { demoThemeKey: activeThemeKey }] },
-      ],
+      OR: [{ demoThemeKey: null }, { demoThemeKey: activeThemeKey }],
     };
 
-    const [items, total] = await Promise.all([
-      db().content.findMany({
+    const dbDtos = (
+      await db().content.findMany({
         where,
         include: CONTENT_INCLUDE,
         orderBy: { publishedAt: "desc" },
-        skip: (page - 1) * ARCHIVE_PAGE_SIZE,
-        take: ARCHIVE_PAGE_SIZE,
-      }),
-      db().content.count({ where }),
-    ]);
+        take: MAX_SEARCH_SCAN,
+      })
+    )
+      .map(toContentDto)
+      .filter((item) =>
+        this.matchesSearchQuery(
+          [item.title, item.slug, item.excerpt, item.data, item.blocks, item.seo],
+          query,
+        ),
+      );
+    const staticDtos = this.searchThemeManifest(themeManifest, {
+      siteId,
+      locale,
+      query,
+      activeThemeKey,
+    }).filter((item) => !dbDtos.some((dbItem) => dbItem.path === item.path));
+    const merged = [...dbDtos, ...staticDtos];
+    const items = merged.slice((page - 1) * ARCHIVE_PAGE_SIZE, page * ARCHIVE_PAGE_SIZE);
+    const total = merged.length;
 
     return {
       contentTypeKey: "search",
       title: query ? `Search: ${query}` : "Search",
       basePath: "/search",
-      items: items.map(toContentDto),
+      items,
       page,
       totalPages: Math.max(1, Math.ceil(total / ARCHIVE_PAGE_SIZE)),
     };
@@ -961,6 +997,118 @@ export class RenderService {
 
   private normalizeSearchQuery(query: string | undefined): string {
     return (query ?? "").trim().slice(0, 120);
+  }
+
+  private matchesSearchQuery(value: unknown, query: string): boolean {
+    const needle = query.toLocaleLowerCase();
+    return !needle || this.plainText(value).toLocaleLowerCase().includes(needle);
+  }
+
+  private searchThemeManifest(
+    manifest: unknown,
+    opts: {
+      siteId: string;
+      locale: string;
+      query: string;
+      activeThemeKey: string;
+    },
+  ): ContentDto[] {
+    const parsed = manifest as SearchableThemeManifest | null | undefined;
+    if (!parsed || typeof parsed !== "object") return [];
+
+    const needle = opts.query.toLocaleLowerCase();
+    const matches = (value: unknown) =>
+      !needle || this.plainText(value).toLocaleLowerCase().includes(needle);
+
+    const now = new Date(0).toISOString();
+    const items: ContentDto[] = [];
+    const contentTypes = new Map(
+      (parsed.demo?.contentTypes ?? []).map((type) => [type.key, type]),
+    );
+
+    const themeText = [
+      parsed.name,
+      parsed.description,
+      parsed.demo?.settings,
+      parsed.settingsSchema,
+    ];
+    if (matches(themeText)) {
+      items.push({
+        id: `theme-static:${parsed.id ?? opts.activeThemeKey}`,
+        siteId: opts.siteId,
+        contentType: { id: "theme-static", key: "theme", name: "Theme" },
+        locale: opts.locale,
+        translationGroupId: `theme-static:${parsed.id ?? opts.activeThemeKey}`,
+        title: parsed.name ? `Theme: ${parsed.name}` : "Theme content",
+        slug: "",
+        path: "/",
+        excerpt: parsed.description ?? null,
+        data: {},
+        blocks: [],
+        seo: {},
+        status: "PUBLISHED",
+        publishedAt: null,
+        author: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    for (const content of parsed.demo?.contents ?? []) {
+      if (content.locale !== opts.locale || (content.status && content.status !== "PUBLISHED")) {
+        continue;
+      }
+      if (!matches([content.title, content.excerpt, content.data, content.blocks, content.seo])) {
+        continue;
+      }
+
+      const contentType = contentTypes.get(content.contentType);
+      const routePrefix = contentType?.isRoutable === false ? "" : (contentType?.routePrefix ?? "");
+      const contentPathValue = this.demoContentPath(routePrefix, content.slug);
+      items.push({
+        id: `theme-demo:${opts.activeThemeKey}:${content.locale}:${content.contentType}:${content.slug}`,
+        siteId: opts.siteId,
+        contentType: {
+          id: `theme-demo:${content.contentType}`,
+          key: content.contentType,
+          name: contentType?.name ?? content.contentType,
+        },
+        locale: content.locale,
+        translationGroupId: `theme-demo:${opts.activeThemeKey}:${content.contentType}:${content.slug}`,
+        title: content.title,
+        slug: content.slug,
+        path: contentPathValue,
+        excerpt: content.excerpt ?? null,
+        data: content.data ?? {},
+        blocks: (Array.isArray(content.blocks) ? content.blocks : []) as ContentDto["blocks"],
+        seo: content.seo ?? {},
+        status: "PUBLISHED",
+        publishedAt: content.publishedAt ?? null,
+        author: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    return items;
+  }
+
+  private plainText(value: unknown): string {
+    if (value == null) return "";
+    if (typeof value === "string") return value.replace(/<[^>]*>/g, " ");
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (Array.isArray(value)) return value.map((item) => this.plainText(item)).join(" ");
+    if (typeof value === "object") return Object.values(value).map((item) => this.plainText(item)).join(" ");
+    return "";
+  }
+
+  private demoContentPath(routePrefix: string, slug: string): string {
+    const prefix = routePrefix.replace(/^\/|\/$/g, "");
+    const cleanSlug = slug.replace(/^\/|\/$/g, "");
+    if (!prefix && !cleanSlug) return "/";
+    if (!prefix) return `/${cleanSlug}`;
+    if (!cleanSlug) return `/${prefix}`;
+    return `/${prefix}/${cleanSlug}`;
   }
 
   /**

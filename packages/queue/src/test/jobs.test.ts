@@ -50,6 +50,7 @@ describe("JOB_NAMES", () => {
       "media.variants",
       "plugin.deferred",
       "site.sitemap",
+      "theme.build",
       "mail.send",
       "sessions.prune",
       "media.sweep",

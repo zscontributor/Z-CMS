@@ -73,6 +73,13 @@ const SENSITIVE: Record<Permission, boolean> = {
   // Introducing unreviewed code from a file — for a theme, code that runs
   // unsandboxed. As grave as package:review, and for the same reason.
   "theme:sideload": true,
+  // Drawing a theme writes a document to this tenant's own database. It renders
+  // nowhere and ships nothing until somebody with theme:sideload builds it, so the
+  // authoring right itself is no graver than configuring a theme.
+  "theme:author": false,
+  // Puts this company's name on a package strangers download, and once the
+  // marketplace approves it there is no taking it back.
+  "theme:publish": true,
   "plugin:sideload": true,
 };
 

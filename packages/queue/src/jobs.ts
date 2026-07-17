@@ -69,6 +69,32 @@ export interface JobPayloads {
   };
 
   /**
+   * Turn a drawing from the GUI Theme Editor into a built, signed theme package.
+   *
+   * A job rather than a request, because it is the one thing in this system that
+   * genuinely takes seconds: it writes a theme's source, runs esbuild over it, and
+   * packs and signs the result. An HTTP handler doing that would hold a connection
+   * open through a bundle, and a bundle is not something to retry inside a request.
+   *
+   * The payload is IDs, not the document — the same shape as `media.variants`, and
+   * for the same reason. A LayoutDocument is the whole design; putting it in the
+   * job would put a copy of it in Redis, and the copy would be stale the moment
+   * somebody saved again. The worker reads the row it is told about, so it always
+   * builds what the draft says NOW.
+   */
+  "theme.build": {
+    tenantId: string;
+    siteId: string;
+    draftId: string;
+    /**
+     * Who pressed Build. Carried because the worker installs the result through
+     * cms-api's sideload gate, which writes an audit log — and "a theme appeared"
+     * with nobody's name on it is the entry nobody can act on.
+     */
+    actorId: string;
+  };
+
+  /**
    * Deliver one email through the site's own SMTP server.
    *
    * Queued rather than sent inline, for two reasons that are really the same one.
@@ -138,6 +164,7 @@ export const JOB_NAMES = [
   "media.variants",
   "plugin.deferred",
   "site.sitemap",
+  "theme.build",
   "mail.send",
   "sessions.prune",
   "media.sweep",

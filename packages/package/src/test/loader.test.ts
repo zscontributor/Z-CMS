@@ -163,6 +163,20 @@ describe("ensureBundle", () => {
     expect(bundle.checksum).toBe(checksum);
   });
 
+  it("re-fetches when cached code is modified after signature verification", async () => {
+    const { file, checksum } = await releasedFile();
+    const fetchMock = stubDownload(file);
+    await ensureBundle(cfg, "marketplace", "theme", KEY, VERSION, checksum);
+
+    fs.writeFileSync(path.join(bundlePath(), "dist/index.js"), "export default { evil: true }\n");
+    fetchMock.mockClear();
+
+    const bundle = await ensureBundle(cfg, "marketplace", "theme", KEY, VERSION, checksum);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fs.readFileSync(bundle.entryPath, "utf8")).toContain("corporate");
+  });
+
   it("re-fetches when the cached marker disagrees with the checksum the API registered", async () => {
     // A cache entry whose checksum is not the released one means the version was
     // republished or someone wrote to the cache directory. Both mean: do not use it.
@@ -324,5 +338,15 @@ describe("bundleChecksumOnDisk", () => {
 
   it("reports nothing for a directory that does not exist", () => {
     expect(bundleChecksumOnDisk(path.join(tmp, "nowhere"))).toBeNull();
+  });
+
+  it("reports nothing after verified bundle contents are modified", async () => {
+    const { file } = await releasedFile();
+    stubDownload(file);
+    await ensureBundle(cfg, "marketplace", "theme", KEY, VERSION);
+
+    fs.writeFileSync(path.join(bundlePath(), "dist/index.js"), "tampered\n");
+
+    expect(bundleChecksumOnDisk(bundlePath())).toBeNull();
   });
 });

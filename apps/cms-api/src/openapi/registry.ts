@@ -5,6 +5,8 @@ import {
   AuthResultSchema,
   BlockDocumentSchema,
   BlockSchema,
+  LayoutDocumentSchema,
+  LayoutNodeSchema,
   ChangePasswordSchema,
   ContentStatusSchema,
   ContentTypeFieldSchema,
@@ -63,6 +65,11 @@ import type {
 } from "../marketplace/marketplace.module";
 import type { CatalogPlugin } from "../plugins/plugins.controller";
 import type { CatalogTheme, InstalledTheme } from "../themes/themes.module";
+import type {
+  ThemeDraftDto,
+  ThemeDraftSummaryDto,
+} from "../theme-drafts/theme-drafts.module";
+import type { PublisherKeyDto } from "../publisher-keys/publisher-keys.module";
 
 /**
  * Every schema the OpenAPI document names, generated from the Zod contracts the
@@ -126,6 +133,87 @@ export const PutMenuSchema = z.object({
   name: z.string().min(1),
   items: z.array(MenuItemInputSchema).default([]),
 });
+
+// The layout node is recursive, so it MUST be registered — see the note above
+// BlockInput. Registered once and referenced by both the draft request and the
+// draft response, which is what keeps "what the editor may send" and "what the API
+// returns" from becoming two descriptions of one tree.
+requests.add(LayoutNodeSchema, { id: "LayoutNodeInput" });
+responses.add(LayoutNodeSchema, { id: "LayoutNode" });
+requests.add(LayoutDocumentSchema, { id: "LayoutDocumentInput" });
+responses.add(LayoutDocumentSchema, { id: "LayoutDocument" });
+
+export const CreateThemeDraftSchema = z.object({
+  name: z.string().min(1),
+  key: z
+    .string()
+    .min(1)
+    .describe('Reverse-DNS key the generated theme will claim, e.g. "com.acme.theme.shop".'),
+  description: z.string().optional(),
+});
+
+/**
+ * An already-wrapped publisher key.
+ *
+ * Note what is absent and must stay absent: there is no `privateKey`, and no
+ * `passphrase`. The browser wraps the key and sends the result; the server stores
+ * a blob it cannot open. A field here that carried either would make compromising
+ * cms-api enough to publish as the author.
+ */
+export const PutPublisherKeySchema = z.object({
+  publicKeyPem: z.string().min(1).describe("SPKI PEM. Public by definition."),
+  wrappedPrivateKey: z
+    .string()
+    .min(1)
+    .describe("Base64 AES-GCM ciphertext of the PKCS#8 key. Opaque to the server."),
+  kdfSalt: z.string().min(1).describe("Base64. Random per key."),
+  kdfIv: z.string().min(1).describe("Base64. Random per wrap."),
+  kdf: z.string().min(1).describe('Key derivation used, e.g. "PBKDF2-SHA256".'),
+  kdfIterations: z
+    .number()
+    .int()
+    .positive()
+    .describe("Recorded so an old blob still opens after the default is raised."),
+});
+
+/**
+ * The author's signature over the staged build.
+ *
+ * Two fields, and the absence of a third is the design: there is no `privateKey`.
+ * The signature was made in the browser; the server verifies it and wraps the
+ * package. Adding a private key here would move the author's identity onto a server
+ * that has no need of it.
+ */
+export const PutMarketplaceTokenSchema = z.object({
+  token: z
+    .string()
+    .min(1)
+    .describe('A marketplace API token, created under Tokens in the developer portal. Starts with "zcms_pat_".'),
+});
+
+export const SealThemeDraftSchema = z.object({
+  signature: z
+    .string()
+    .min(1)
+    .describe("Base64 Ed25519 signature over the staged payload's checksum."),
+  publicKeyPem: z
+    .string()
+    .min(1)
+    .describe("SPKI PEM of the key that signed. Travels in the envelope."),
+});
+
+export const UpdateThemeDraftSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    description: z.string().optional(),
+    version: z.string().min(1).optional(),
+    document: LayoutDocumentSchema.optional(),
+  })
+  // A PATCH with no fields is a no-op the client did not mean to send; refusing it
+  // surfaces the bug rather than returning 200 for nothing.
+  .refine((body) => Object.keys(body).length > 0, {
+    message: "Nothing to update.",
+  });
 
 // ---------------------------------------------------------------------------
 // Sites
@@ -267,6 +355,11 @@ requests.add(GatewayCallSchema, { id: "GatewayCallInput" });
 requests.add(MailSettingsSchema, { id: "MailSettingsInput" });
 requests.add(SendTestMailSchema, { id: "SendTestMailInput" });
 requests.add(DeliverMailSchema, { id: "DeliverMailInput" });
+requests.add(CreateThemeDraftSchema, { id: "CreateThemeDraftInput" });
+requests.add(UpdateThemeDraftSchema, { id: "UpdateThemeDraftInput" });
+requests.add(PutPublisherKeySchema, { id: "PutPublisherKeyInput" });
+requests.add(SealThemeDraftSchema, { id: "SealThemeDraftInput" });
+requests.add(PutMarketplaceTokenSchema, { id: "PutMarketplaceTokenInput" });
 
 // ---------------------------------------------------------------------------
 // Responses
@@ -723,6 +816,53 @@ const ErrorSchema = z.object({
     .describe("Present on Zod validation failures: one entry per rejected field."),
 });
 
+const ThemeDraftStatusSchema = z.enum(["DRAFT", "BUILDING", "BUILT", "SUBMITTED", "FAILED"]);
+
+const ThemeDraftAuthorSchema = z
+  .object({ id: z.uuid(), name: z.string() })
+  .nullable()
+  .describe("Null when the person who drew this has since been removed.");
+
+const ThemeDraftSummaryDtoSchema = z.object({
+  id: z.uuid(),
+  siteId: z.uuid(),
+  name: z.string(),
+  key: z.string(),
+  version: z.string(),
+  description: z.string().nullable(),
+  status: ThemeDraftStatusSchema,
+  buildError: z.string().nullable(),
+  lastBuiltAt: z.string().nullable(),
+  submittedAt: z.string().nullable(),
+  author: ThemeDraftAuthorSchema,
+  updatedAt: z.string(),
+});
+
+// The summary plus the drawing itself. The list endpoint returns summaries: a
+// LayoutDocument is the whole design, and shipping ten of them to render a table
+// of names is megabytes nobody asked for.
+const ThemeDraftDtoSchema = ThemeDraftSummaryDtoSchema.extend({
+  document: LayoutDocumentSchema,
+  submissionRef: z.string().nullable(),
+  payloadChecksum: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+const PublisherKeyDtoSchema = z.object({
+  publicKeyPem: z.string(),
+  wrappedPrivateKey: z.string(),
+  kdfSalt: z.string(),
+  kdfIv: z.string(),
+  kdf: z.string(),
+  kdfIterations: z.number().int(),
+  hasMarketplaceToken: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+responses.add(ThemeDraftSummaryDtoSchema, { id: "ThemeDraftSummaryDto" });
+responses.add(ThemeDraftDtoSchema, { id: "ThemeDraftDto" });
+responses.add(PublisherKeyDtoSchema, { id: "PublisherKeyDto" });
 responses.add(SessionUserSchema, { id: "SessionUser" });
 responses.add(AuthResultSchema, { id: "AuthResult" });
 responses.add(BlockSchema, { id: "Block" });
@@ -793,6 +933,11 @@ export type RequestSchemaId =
   | "MailSettingsInput"
   | "SendTestMailInput"
   | "DeliverMailInput"
+  | "CreateThemeDraftInput"
+  | "UpdateThemeDraftInput"
+  | "PutPublisherKeyInput"
+  | "SealThemeDraftInput"
+  | "PutMarketplaceTokenInput"
 
 export type ResponseSchemaId =
   | "SessionUser"
@@ -817,6 +962,9 @@ export type ResponseSchemaId =
   | "CatalogPlugin"
   | "CatalogTheme"
   | "InstalledTheme"
+  | "ThemeDraftDto"
+  | "ThemeDraftSummaryDto"
+  | "PublisherKeyDto"
   | "FailedJob"
   | "FailedJobPage"
   | "RegistryPackage"
@@ -910,5 +1058,8 @@ const _noDrift: [
   Exact<z.infer<typeof MarketplaceStatusSchema>, MarketplaceStatus>,
   Exact<z.infer<typeof SignedRevocationListSchema>, SignedRevocationList>,
   Exact<z.infer<typeof MailSettingsDtoSchema>, MailSettingsDto>,
-] = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true];
+  Exact<z.infer<typeof ThemeDraftDtoSchema>, ThemeDraftDto>,
+  Exact<z.infer<typeof ThemeDraftSummaryDtoSchema>, ThemeDraftSummaryDto>,
+  Exact<z.infer<typeof PublisherKeyDtoSchema>, PublisherKeyDto>,
+] = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true];
 void _noDrift;

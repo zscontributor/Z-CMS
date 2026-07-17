@@ -6,9 +6,11 @@ import type {
   TranslationDto,
   ContentTypeDto,
   InvitationDto,
+  LayoutDocument,
   MailSettingsDto,
   MediaDto,
   MediaFolderDto,
+  MenuDto,
   Paginated,
   Permission,
   SessionUser,
@@ -429,6 +431,51 @@ export const listInstalledThemes = cache(
 export const listThemeCatalog = cache(
   async (): Promise<ThemeCatalogEntry[]> =>
     apiFetch<ThemeCatalogEntry[]>("/themes", { siteScoped: false }),
+);
+
+// ---------------------------------------------------------------------------
+// Theme drafts (the GUI Theme Editor's documents)
+// ---------------------------------------------------------------------------
+
+export type ThemeDraftStatus = "DRAFT" | "BUILDING" | "BUILT" | "SUBMITTED" | "FAILED";
+
+export interface ThemeDraftSummaryDto {
+  id: string;
+  siteId: string;
+  name: string;
+  key: string;
+  version: string;
+  description: string | null;
+  status: ThemeDraftStatus;
+  buildError: string | null;
+  lastBuiltAt: string | null;
+  submittedAt: string | null;
+  author: { id: string; name: string } | null;
+  updatedAt: string;
+}
+
+export interface ThemeDraftDto extends ThemeDraftSummaryDto {
+  document: LayoutDocument;
+  submissionRef: string | null;
+  /** The digest the author signs. Null until a build stages one. */
+  payloadChecksum: string | null;
+  createdAt: string;
+}
+
+/**
+ * The site's menus, as the editor's canvas needs them: a `layout/menu` widget names
+ * a LOCATION, and the preview can only draw it if it knows what is assigned there.
+ */
+export const listMenus = cache(async (): Promise<MenuDto[]> => apiFetch<MenuDto[]>("/menus"));
+
+/** The list screen's rows. Deliberately without documents — see the API's DTO note. */
+export const listThemeDrafts = cache(
+  async (): Promise<ThemeDraftSummaryDto[]> => apiFetch<ThemeDraftSummaryDto[]>("/theme-drafts"),
+);
+
+export const getThemeDraft = cache(
+  async (id: string): Promise<ThemeDraftDto> =>
+    apiFetch<ThemeDraftDto>(`/theme-drafts/${encodeURIComponent(id)}`),
 );
 
 // ---------------------------------------------------------------------------

@@ -3,6 +3,21 @@
   "title": "Appearance",
   "description": "Activate a theme and adjust the settings it declares.",
   "denied": "You do not have permission to view themes.",
+  "drafts": {
+    "heading": "Your designs",
+    "hint": "Themes drawn in the editor. A design renders nowhere until it is built and installed.",
+    "empty": "No designs yet.",
+    "name": "Name",
+    "key": "Theme key",
+    "keyHint": "Reverse-DNS, e.g. com.acme.theme.shop. Cannot start with vn.zsoft.",
+    "status": {
+      "DRAFT": "Draft",
+      "BUILDING": "Building",
+      "BUILT": "Built",
+      "SUBMITTED": "Submitted",
+      "FAILED": "Failed"
+    }
+  },
   "emptyTitle": "No theme installed",
   "emptyDescription": "This site has no theme installed yet.",
   "active": "In use",

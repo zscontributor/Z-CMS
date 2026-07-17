@@ -555,14 +555,8 @@ function HomeTemplate({ ctx, content }: PageTemplateProps<DefaultThemeSettings>)
           <div className="zdefault__market-grid">
             {MARKET_CARDS.map((card) => (
               <article className="zdefault__market-card" key={card.name}>
-                <div
-                  className={`zdefault__market-preview zdefault__market-preview--${card.tone}`}
-                >
-                  <div className="zdefault__preview-window">
-                    <span />
-                    <span />
-                    <div />
-                  </div>
+                <div className="zdefault__market-preview">
+                  <img src={ctx.asset(card.preview)} alt={`${card.name} theme`} />
                 </div>
                 <div className="zdefault__market-body">
                   <div className="zdefault__market-meta">
@@ -843,9 +837,21 @@ function ErrorTemplate({
 const FEATURE_ICONS = ["[ ]", "</>", "{ }", "API", "TS", "◇"];
 
 const MARKET_CARDS = [
-  { tone: "one", name: "Z Default", tagKey: "market.business" },
-  { tone: "two", name: "Z Market", tagKey: "market.commerce" },
-  { tone: "three", name: "Z Magazine", tagKey: "market.publishing" },
+  {
+    name: "Z Default",
+    tagKey: "market.business",
+    preview: "assets/theme-previews/default.png",
+  },
+  {
+    name: "Z Market",
+    tagKey: "market.commerce",
+    preview: "assets/theme-previews/market.png",
+  },
+  {
+    name: "Z Magazine",
+    tagKey: "market.publishing",
+    preview: "assets/theme-previews/magazine.png",
+  },
 ] as const;
 
 /** A picture of a website, drawn in CSS. No image to ship, and it re-colours in dark mode. */

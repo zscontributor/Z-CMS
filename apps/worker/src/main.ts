@@ -19,6 +19,7 @@ import { runMarketplaceSync } from "./jobs/marketplace-sync";
 import { runMediaVariants } from "./jobs/media-variants";
 import { runPluginDeferred } from "./jobs/plugin-deferred";
 import { runSitemap } from "./jobs/sitemap";
+import { runThemeBuild } from "./jobs/theme-build";
 
 /**
  * The background worker.
@@ -43,6 +44,7 @@ const handlers: Handlers = {
   "media.variants": runMediaVariants,
   "plugin.deferred": runPluginDeferred,
   "site.sitemap": runSitemap,
+  "theme.build": runThemeBuild,
   "mail.send": runMailSend,
   "sessions.prune": runSessionsPrune,
   "media.sweep": runMediaSweep,

@@ -219,9 +219,17 @@
       "label": "Install themes from a file",
       "detail": "Add theme code that no marketplace reviewed — and a theme runs unsandboxed."
     },
+    "theme:author": {
+      "label": "Design themes",
+      "detail": "Create and edit theme designs in the editor. A design renders nowhere until somebody builds it."
+    },
     "plugin:sideload": {
       "label": "Install plugins from a file",
       "detail": "Add plugin code that no marketplace reviewed. It still runs in the sandbox."
+    },
+    "theme:publish": {
+      "label": "Publish themes to the marketplace",
+      "detail": "Put a theme on the public marketplace under this company's name. Once approved, it cannot be recalled."
     }
   },
   "sideloadHint": "Plugins you installed from a file. They run in the sandbox like any other, once approved.",

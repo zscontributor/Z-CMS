@@ -62,6 +62,33 @@ export const PERMISSIONS = [
    * the reviewer, and sideloading is them exercising exactly that authority.
    */
   "theme:sideload",
+  /**
+   * Draw a theme in the GUI Theme Editor: create, edit and delete a ThemeDraft.
+   *
+   * Authoring only. A draft is a drawing in this tenant's own database — it renders
+   * nowhere, ships nothing, and is verified by nothing, so drawing one is no graver
+   * than configuring a theme, and it sits in the same role. The consequential acts
+   * come later and are gated separately: BUILDING a draft turns it into signed code
+   * (theme:sideload, since it installs unreviewed code onto this instance), and
+   * SUBMITTING publishes it to the marketplace under a publisher identity.
+   *
+   * Splitting it this way is the point. If "draw" and "publish" were one permission,
+   * every designer allowed to move a widget would also be allowed to put this
+   * company's name on a package a stranger downloads.
+   */
+  "theme:author",
+  /**
+   * Put a theme on the public marketplace, under this instance's publisher identity.
+   *
+   * Separate from `theme:author` for the same reason `theme:sideload` is: drawing is
+   * a document in this tenant's database, and publishing puts the company's name on
+   * a package a stranger downloads. A designer allowed to move a widget is not
+   * thereby allowed to speak for the company in public.
+   *
+   * OWNER only. It cannot be undone by us — once the marketplace counter-signs an
+   * approved package, it is out there.
+   */
+  "theme:publish",
   "plugin:sideload",
   "plugin:read",
   "plugin:install",
@@ -154,6 +181,7 @@ const ADMIN: Permission[] = [
   "theme:install",
   "theme:activate",
   "theme:configure",
+  "theme:author",
   "plugin:install",
   "plugin:activate",
   "plugin:configure",
@@ -176,6 +204,8 @@ const OWNER: Permission[] = [
   // same reasoning as package:review, which sits right above.
   "theme:sideload",
   "plugin:sideload",
+  // Publishing under the company's name is the owner's call, like the two above.
+  "theme:publish",
 ];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {

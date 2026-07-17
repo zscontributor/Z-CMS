@@ -3,6 +3,21 @@
   "title": "Giao diện",
   "description": "Kích hoạt giao diện và tuỳ chỉnh các thiết lập do giao diện khai báo.",
   "denied": "Bạn không có quyền xem giao diện.",
+  "drafts": {
+    "heading": "Bản thiết kế của bạn",
+    "hint": "Theme vẽ trong trình soạn thảo. Bản thiết kế chưa hiển thị ở đâu cho tới khi được build và cài.",
+    "empty": "Chưa có bản thiết kế nào.",
+    "name": "Tên",
+    "key": "Khoá theme",
+    "keyHint": "Dạng reverse-DNS, ví dụ com.acme.theme.shop. Không được bắt đầu bằng vn.zsoft.",
+    "status": {
+      "DRAFT": "Nháp",
+      "BUILDING": "Đang build",
+      "BUILT": "Đã build",
+      "SUBMITTED": "Đã gửi duyệt",
+      "FAILED": "Lỗi"
+    }
+  },
   "emptyTitle": "Chưa cài giao diện nào",
   "emptyDescription": "Site này chưa có giao diện được cài đặt.",
   "active": "Đang dùng",

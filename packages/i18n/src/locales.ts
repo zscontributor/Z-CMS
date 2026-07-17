@@ -21,6 +21,7 @@ export const NAMESPACES = [
   "media",
   "plugins",
   "site",
+  "themeEditor",
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];

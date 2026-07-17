@@ -3,6 +3,21 @@
   "title": "外観",
   "description": "テーマをアクティブ化し、テーマが宣言する設定を調整します。",
   "denied": "テーマを表示する権限がありません。",
+  "drafts": {
+    "heading": "あなたのデザイン",
+    "hint": "エディターで作成したテーマ。ビルドしてインストールするまで、どこにも表示されません。",
+    "empty": "デザインはまだありません。",
+    "name": "名前",
+    "key": "テーマキー",
+    "keyHint": "逆引きDNS形式（例: com.acme.theme.shop）。vn.zsoft. で始めることはできません。",
+    "status": {
+      "DRAFT": "下書き",
+      "BUILDING": "ビルド中",
+      "BUILT": "ビルド済み",
+      "SUBMITTED": "申請済み",
+      "FAILED": "失敗"
+    }
+  },
   "emptyTitle": "テーマがインストールされていません",
   "emptyDescription": "このサイトにはテーマがまだインストールされていません。",
   "active": "使用中",

@@ -31,6 +31,8 @@ import { QueueModule } from "./queue/queue.module";
 import { RedisModule } from "./redis/redis.module";
 import { RenderModule } from "./render/render.module";
 import { SitesModule } from "./sites/sites.module";
+import { PublisherKeysModule } from "./publisher-keys/publisher-keys.module";
+import { ThemeDraftsModule } from "./theme-drafts/theme-drafts.module";
 import { ThemesModule } from "./themes/themes.module";
 import { UsersModule } from "./users/users.module";
 
@@ -83,7 +85,9 @@ class HealthController {
     PluginsModule,
     PackagesModule,
     MarketplaceModule,
+    PublisherKeysModule,
     SideloadModule,
+    ThemeDraftsModule,
     ThemesModule,
     RenderModule,
   ],

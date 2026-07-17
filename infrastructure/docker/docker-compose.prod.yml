@@ -271,6 +271,7 @@ services:
       - /app/apps/site-runtime/.next/cache:size=128m
     environment:
       NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=640
       PORT: "3000"
       CMS_API_URL: http://cms-api:4100
       THEME_CACHE_DIR: /tmp/zcms-themes
@@ -285,7 +286,9 @@ services:
       # APP_DATABASE_URL, JWT_SECRET, TOTP_ENCRYPTION_KEY, MAIL_ENCRYPTION_KEY,
       # S3_ACCESS_KEY, S3_SECRET_KEY, REDIS_URL, SMTP_*, SEED_ADMIN_*.
       CMS_API_PUBLIC_URL: ${CMS_API_PUBLIC_URL:-}
-      CMS_INTERNAL_TOKEN: ${SITE_RUNTIME_INTERNAL_TOKEN:-${CMS_INTERNAL_TOKEN:?set CMS_INTERNAL_TOKEN}}
+      # A theme runs in this process today, so never give it the worker-wide token.
+      # This render token is accepted only by read-only render/package endpoints.
+      CMS_INTERNAL_TOKEN: ${SITE_RUNTIME_INTERNAL_TOKEN:?set a distinct SITE_RUNTIME_INTERNAL_TOKEN}
       # Optional now, not `:?`. An air-gapped instance runs no marketplace, so it may
       # have no key to pin; when empty, site-runtime simply refuses to load a
       # marketplace theme (there are none) while built-ins and sideloads still work.
@@ -299,6 +302,12 @@ services:
         condition: service_healthy
     ports:
       - "${SITE_RUNTIME_PORT:-3000}:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+          pids: 128
 
   # The only service that runs untrusted marketplace code. Its own minimal,
   # credential-free image, hardened the same way the dev stack hardens it: the
@@ -361,6 +370,7 @@ services:
         limits:
           cpus: "1.0"
           memory: 512M
+          pids: 128
 
 networks:
   # The ordinary bridge every other service uses. Has a default route.

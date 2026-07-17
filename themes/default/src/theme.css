@@ -636,43 +636,20 @@
 }
 .zdefault__market-preview {
   height: 210px;
-  padding: 22px;
-  display: flex;
-  align-items: end;
-}
-.zdefault__market-preview--one {
-  background: #dde8df;
-}
-.zdefault__market-preview--two {
-  background: #f0c9ac;
-}
-.zdefault__market-preview--three {
-  background: #d8def6;
-}
-.zdefault__preview-window {
   width: 100%;
-  height: 142px;
-  border-radius: 11px 11px 0 0;
-  background: var(--z-card);
-  padding: 12px;
-  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.12);
-}
-.zdefault__preview-window span {
-  display: block;
-  height: 6px;
-  width: 45%;
-  background: var(--z-line);
-  border-radius: 4px;
-  margin-bottom: 7px;
-}
-.zdefault__preview-window span:nth-child(2) {
-  width: 28%;
-}
-.zdefault__preview-window div {
-  height: 75px;
+  overflow: hidden;
   background: var(--z-paper);
-  border-radius: 6px;
-  margin-top: 10px;
+}
+.zdefault__market-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.35s ease;
+}
+.zdefault__market-card:hover .zdefault__market-preview img {
+  transform: scale(1.025);
 }
 .zdefault__market-body {
   padding: 20px;

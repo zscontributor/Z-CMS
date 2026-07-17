@@ -37,7 +37,7 @@ import {
   type PackageEnvelope,
 } from "@zcmsorg/package";
 import { scanPackage, type ScanReport } from "@zcmsorg/scanner";
-import { Actor, RequirePermissions } from "../auth/decorators";
+import { Actor, Internal, RequirePermissions } from "../auth/decorators";
 import type { RequestActor } from "../common/request-context";
 import { t } from "../common/i18n";
 import { ApiAuthed, ApiFileUpload, ApiNotFound } from "../openapi/decorators";
@@ -167,8 +167,15 @@ export class SideloadService {
     }
   }
 
+  /**
+   * `by` rather than a RequestActor: the only thing this needs from the caller is
+   * who to credit in the audit log, and the caller is not always a request. The
+   * Theme Editor's build job installs through this same path from the worker, where
+   * there is no session — a synthetic RequestActor would be a lie the type system
+   * could not see, and this is honest about needing exactly two fields.
+   */
   async installSideload(
-    actor: RequestActor,
+    by: { tenantId: string; actorId: string },
     kind: Kind,
     file: Express.Multer.File,
   ): Promise<{ key: string; version: string; reviewStatus: string; scan: ScanReport }> {
@@ -256,8 +263,8 @@ export class SideloadService {
 
     await getSystemDb().auditLog.create({
       data: {
-        tenantId: actor.tenantId,
-        actorId: actor.userId,
+        tenantId: by.tenantId,
+        actorId: by.actorId,
         action: "sideload.installed",
         resourceType: kind,
         resourceId: key,
@@ -590,6 +597,54 @@ class SideloadController {
   constructor(private readonly sideload: SideloadService) {}
 
   /**
+   * Install a package the WORKER built — the Theme Editor's build job.
+   *
+   * Internal-token guarded because the body names any tenant it likes, exactly like
+   * `/mail/deliver`: only our own worker may say "install this, on behalf of that
+   * tenant". A user-facing route with the same power would be a way to install a
+   * theme into somebody else's tenant.
+   *
+   * It deliberately earns NO shortcut. The bytes go through the same
+   * verifyOperator + assertNotImpersonating + scan + registerSideload path as a file
+   * an operator uploaded by hand, and land QUARANTINED like anything else. A drawn
+   * theme is built from a constant wrapper and a reviewed widget library, so it is
+   * tempting to trust it — but the runtime's rule is not "trust safe-looking code",
+   * it is "import nothing a key pinned in my own env did not sign". A second, softer
+   * door is always the one that eventually gets used.
+   *
+   * ALLOW_THEME_SIDELOAD still applies (via assertKindAllowed). A drawn theme is
+   * still unsandboxed code in site-runtime, and that switch is precisely the
+   * operator's answer to "may themes nobody reviewed run here".
+   */
+  @Internal()
+  @Post("internal/built")
+  @HttpCode(200)
+  @ApiOperation({
+    summary: "Install a package built by the worker",
+    description:
+      "Called by the theme.build job, never by a user. The package goes through the " +
+      "same verify/scan/quarantine gate as a hand-uploaded sideload.",
+  })
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_PACKAGE_BYTES } }))
+  installBuilt(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: { tenantId?: string; actorId?: string; kind?: string },
+  ) {
+    const tenantId = body.tenantId?.trim();
+    const actorId = body.actorId?.trim();
+    if (!tenantId || !actorId) {
+      throw new BadRequestException("tenantId and actorId are required.");
+    }
+    // Only themes are drawn. Accepting `kind` from the body and passing it through
+    // would make this a general "install anything, as any tenant" endpoint the day
+    // somebody adds a second job.
+    if (body.kind && body.kind !== "theme") {
+      throw new BadRequestException("Only themes are built from a design.");
+    }
+    return this.sideload.installSideload({ tenantId, actorId }, "theme", file);
+  }
+
+  /**
    * Two routes rather than one with a `kind` field, so the permission guard is
    * static — theme:sideload versus plugin:sideload — the same reasoning as the
    * marketplace install routes. A permission checked in a method body is one someone
@@ -609,7 +664,11 @@ class SideloadController {
   @RequirePermissions("theme:sideload")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_PACKAGE_BYTES } }))
   installTheme(@Actor() actor: RequestActor, @UploadedFile() file: Express.Multer.File) {
-    return this.sideload.installSideload(actor, "theme", file);
+    return this.sideload.installSideload(
+      { tenantId: actor.tenantId, actorId: actor.userId },
+      "theme",
+      file,
+    );
   }
 
   @Post("plugin")
@@ -626,7 +685,11 @@ class SideloadController {
   @RequirePermissions("plugin:sideload")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_PACKAGE_BYTES } }))
   installPlugin(@Actor() actor: RequestActor, @UploadedFile() file: Express.Multer.File) {
-    return this.sideload.installSideload(actor, "plugin", file);
+    return this.sideload.installSideload(
+      { tenantId: actor.tenantId, actorId: actor.userId },
+      "plugin",
+      file,
+    );
   }
 
   @Post(":kind/:key/:version/approve")

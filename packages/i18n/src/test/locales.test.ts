@@ -30,6 +30,7 @@ describe("NAMESPACES", () => {
       "media",
       "plugins",
       "site",
+      "themeEditor",
     ]);
   });
 

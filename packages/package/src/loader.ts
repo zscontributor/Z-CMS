@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { installPayload, openPackage } from "./build";
 import { sha256, verifyFirstParty, verifyOperator, verifyPackage } from "./signing";
 import {
@@ -64,13 +65,53 @@ function bundleDir(cfg: LoaderConfig, kind: PackageKind, key: string, version: s
 
 const MARKER = ".zcms-verified";
 
+interface VerificationMarker {
+  checksum: string;
+  manifest: PackageManifest;
+  /**
+   * Digest of the extracted files, compared against the tree on a warm hit.
+   *
+   * Be precise about what this is worth, because the obvious reading is wrong: it
+   * does NOT make a writable cache safe. The digest is stored in the marker and
+   * compared against the marker, so anyone who can write `dist/index.mjs` can also
+   * rewrite `.zcms-verified` with a recomputed digest and pass. `mode: 0o444` does
+   * not change that — the owner can chmod. Nor does `checksum` help: it is compared
+   * to `expectedChecksum`, which every caller but the theme-asset route omits, and
+   * `!expectedChecksum` short-circuits the whole condition to true.
+   *
+   * What it actually catches is mutation by something that got a write once and did
+   * not update the marker — bit rot, a half-finished write, a careless attacker. It
+   * is a cheap integrity check, not a boundary, and the security model must not lean
+   * on it as one.
+   *
+   * The property that DOES hold is structural: each runtime downloads, verifies and
+   * caches on its own private tmpfs, so the writer and the verifier are the same
+   * process. Nothing else can reach the directory. That, not this digest, is why a
+   * warm hit is safe — and it is why the deploy stack must never point a runtime's
+   * cache at a shared volume. See the note on PLUGIN_CACHE_DIR in z-cms.stack.yml,
+   * which did exactly that and broke plugin loading outright.
+   *
+   * To make a shared cache genuinely safe, the digest would have to be derived from
+   * signature-verified bytes (retain the `.zcms` and re-verify on every hit, as
+   * `ensureBuiltinBundle` does) rather than from the marker beside it.
+   */
+  contentDigest: string;
+}
+
 /**
  * Ensures a verified copy of `key@version` exists on disk, and returns where.
  *
- * On a cache hit the payload is re-hashed before it is used. That is not
- * paranoia about our own code: the cache is a directory on disk, and "the file
- * changed after we verified it" is precisely how a package-manager cache becomes
- * a persistence mechanism for an attacker who got write access once.
+ * On a cache hit the tree is re-hashed before it is used. That is not paranoia
+ * about our own code: the cache is a directory on disk, and "the file changed
+ * after we verified it" is precisely how a package-manager cache becomes a
+ * persistence mechanism for an attacker who got write access once.
+ *
+ * But read `VerificationMarker.contentDigest` before relying on it: the re-hash
+ * catches mutation, not a determined writer, because the digest it compares against
+ * lives in the same directory. The warm path does NOT re-check the signature — the
+ * `.zcms` is discarded after extraction, so it cannot. What keeps a warm hit
+ * trustworthy is that `cacheDir` is private to this process; a cacheDir on shared
+ * storage would void that, and nothing in this function would notice.
  */
 export async function ensureBundle(
   cfg: LoaderConfig,
@@ -84,14 +125,15 @@ export async function ensureBundle(
   const markerPath = path.join(dir, MARKER);
 
   if (fs.existsSync(markerPath)) {
-    const marker = JSON.parse(fs.readFileSync(markerPath, "utf8")) as {
-      checksum: string;
-      manifest: PackageManifest;
-    };
+    const marker = readMarker(markerPath);
 
     // A checksum the API disagrees with means the version was republished (which
     // the API forbids) or the cache was tampered with. Either way: re-fetch.
-    if (!expectedChecksum || marker.checksum === expectedChecksum) {
+    if (
+      marker &&
+      (!expectedChecksum || marker.checksum === expectedChecksum) &&
+      marker.contentDigest === contentDigestOnDisk(dir)
+    ) {
       const entryPath = path.join(dir, marker.manifest.entry);
       if (fs.existsSync(entryPath)) {
         return {
@@ -184,9 +226,16 @@ async function unpackVerified(
     throw new PackageError(`Entry "${manifest.entry}" is not in the package.`);
   }
 
+  const contentDigest = contentDigestOnDisk(dir);
+  if (!contentDigest) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    throw new PackageError("The extracted package contains an unsupported filesystem entry.");
+  }
+
   fs.writeFileSync(
     markerPath,
-    JSON.stringify({ checksum: envelope.checksum, manifest }, null, 2),
+    JSON.stringify({ checksum: envelope.checksum, manifest, contentDigest }, null, 2),
+    { mode: 0o444 },
   );
 
   return { key, version, dir, entryPath, manifest, checksum: envelope.checksum };
@@ -267,12 +316,14 @@ export async function ensureBuiltinBundle(
     // re-signed (a new build of the same version, in development) must not keep
     // serving the previous bytes out of the cache.
     if (fs.existsSync(markerPath)) {
-      const marker = JSON.parse(fs.readFileSync(markerPath, "utf8")) as {
-        checksum: string;
-        manifest: PackageManifest;
-      };
-      const entryPath = path.join(dir, marker.manifest.entry);
-      if (marker.checksum === envelope.checksum && fs.existsSync(entryPath)) {
+      const marker = readMarker(markerPath);
+      const entryPath = marker ? path.join(dir, marker.manifest.entry) : "";
+      if (
+        marker &&
+        marker.checksum === envelope.checksum &&
+        marker.contentDigest === contentDigestOnDisk(dir) &&
+        fs.existsSync(entryPath)
+      ) {
         return {
           key,
           version,
@@ -334,9 +385,58 @@ async function download(
 /** Re-hashes a bundle already on disk. Cheap integrity check for a warm cache. */
 export function bundleChecksumOnDisk(dir: string): string | null {
   const markerPath = path.join(dir, MARKER);
+  const marker = readMarker(markerPath);
+  if (!marker || marker.contentDigest !== contentDigestOnDisk(dir)) return null;
+  return marker.checksum;
+}
+
+function readMarker(markerPath: string): VerificationMarker | null {
   if (!fs.existsSync(markerPath)) return null;
-  return (JSON.parse(fs.readFileSync(markerPath, "utf8")) as { checksum: string })
-    .checksum;
+  try {
+    const marker = JSON.parse(fs.readFileSync(markerPath, "utf8")) as Partial<VerificationMarker>;
+    return typeof marker.checksum === "string" &&
+      typeof marker.contentDigest === "string" &&
+      marker.manifest !== undefined
+      ? (marker as VerificationMarker)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Stable digest of every extracted regular file except the marker itself.
+ * Paths and lengths are framed to prevent concatenation ambiguity. Links and
+ * special entries fail closed; a verified package never legitimately has one.
+ */
+function contentDigestOnDisk(root: string): string | null {
+  if (!fs.existsSync(root)) return null;
+  const hash = createHash("sha256");
+
+  const walk = (dir: string): boolean => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+    for (const entry of entries) {
+      if (dir === root && entry.name === MARKER) continue;
+      const full = path.join(dir, entry.name);
+      const rel = path.relative(root, full).split(path.sep).join("/");
+      if (entry.isSymbolicLink()) return false;
+      if (entry.isDirectory()) {
+        hash.update(`d\0${rel}\0`);
+        if (!walk(full)) return false;
+      } else if (entry.isFile()) {
+        const body = fs.readFileSync(full);
+        hash.update(`f\0${rel}\0${body.length}\0`);
+        hash.update(body);
+      } else {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  return walk(root) ? hash.digest("hex") : null;
 }
 
 export { sha256 };

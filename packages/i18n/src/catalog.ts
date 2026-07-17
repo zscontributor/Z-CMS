@@ -14,6 +14,7 @@ import enMail from "./locales/en/mail.json";
 import enMedia from "./locales/en/media.json";
 import enPlugins from "./locales/en/plugins.json";
 import enSite from "./locales/en/site.json";
+import enThemeEditor from "./locales/en/themeEditor.json";
 import viAdmin from "./locales/vi/admin.json";
 import viAppearance from "./locales/vi/appearance.json";
 import viAuth from "./locales/vi/auth.json";
@@ -24,6 +25,7 @@ import viMail from "./locales/vi/mail.json";
 import viMedia from "./locales/vi/media.json";
 import viPlugins from "./locales/vi/plugins.json";
 import viSite from "./locales/vi/site.json";
+import viThemeEditor from "./locales/vi/themeEditor.json";
 import jaAdmin from "./locales/ja/admin.json";
 import jaAppearance from "./locales/ja/appearance.json";
 import jaAuth from "./locales/ja/auth.json";
@@ -34,6 +36,7 @@ import jaMail from "./locales/ja/mail.json";
 import jaMedia from "./locales/ja/media.json";
 import jaPlugins from "./locales/ja/plugins.json";
 import jaSite from "./locales/ja/site.json";
+import jaThemeEditor from "./locales/ja/themeEditor.json";
 
 /**
  * Every message, every locale. Server-side only — see the note in
@@ -55,6 +58,7 @@ export const catalog: Record<string, Messages> = {
     media: enMedia,
     plugins: enPlugins,
     site: enSite,
+    themeEditor: enThemeEditor,
   },
   "vi": {
     admin: viAdmin,
@@ -67,6 +71,7 @@ export const catalog: Record<string, Messages> = {
     media: viMedia,
     plugins: viPlugins,
     site: viSite,
+    themeEditor: viThemeEditor,
   },
   "ja": {
     admin: jaAdmin,
@@ -79,5 +84,6 @@ export const catalog: Record<string, Messages> = {
     media: jaMedia,
     plugins: jaPlugins,
     site: jaSite,
+    themeEditor: jaThemeEditor,
   },
 };

@@ -1,6 +1,17 @@
 @import "tailwindcss";
 
 /*
+ * The widget library's stylesheet, exactly as a generated theme ships it.
+ *
+ * The Theme Editor's canvas draws the real widget components, and they are styled
+ * by plain CSS the theme carries rather than by Tailwind classes — Tailwind never
+ * scans a downloaded theme, so the library cannot rely on it. Importing the same
+ * file here is what makes the canvas show what the theme will actually render; a
+ * separate set of editor styles would be a second implementation to drift.
+ */
+@import "@zcmsorg/theme-widgets/widgets.css";
+
+/*
  * Tailwind v4 is CSS-first: the design tokens below ARE the config. The dark
  * palette is applied by a `.dark` class on <html> (set by the theme toggle,
  * defaulted from prefers-color-scheme by an inline script in the root layout),

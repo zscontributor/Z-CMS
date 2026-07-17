@@ -60,6 +60,8 @@ model Tenant {
   invitations   Invitation[]
   recoveryCodes RecoveryCode[]
   mailSettings  SiteMailSettings[]
+  themeDrafts   ThemeDraft[]
+  publisherKeys PublisherKeyVault[]
 
   @@map("tenants")
 }
@@ -90,6 +92,7 @@ model Site {
   plugins      SitePlugin[]
   invitations  Invitation[]
   mailSettings SiteMailSettings?
+  themeDrafts  ThemeDraft[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
@@ -227,6 +230,8 @@ model User {
   publishers    Publisher[]
   invitesSent   Invitation[]
   recoveryCodes RecoveryCode[]
+  themeDrafts   ThemeDraft[]
+  publisherKey  PublisherKeyVault?
 
   @@index([tenantId])
   @@map("users")
@@ -842,6 +847,187 @@ model SiteTheme {
   @@unique([siteId, themeId])
   @@index([tenantId])
   @@map("site_themes")
+}
+
+// ---------------------------------------------------------------------------
+// Theme drafts — the GUI Theme Editor's working document (TENANT table, RLS)
+//
+// A draft is a DRAWING, not a theme: the LayoutDocument a person built by dragging
+// widgets onto a canvas. It becomes a theme only when the build job generates code
+// from it, signs the package, and registers a ThemeVersion — which is why this
+// table is nowhere near ThemeVersion and shares none of its columns.
+//
+// It is TENANT data, not platform catalog. Somebody's unfinished, unpublished
+// design is theirs; the marketplace's shared registry starts at submission. That
+// distinction is the whole reason this is a separate table rather than a nullable
+// corner of ThemeVersion: an unbuilt drawing has no bundle, no checksum, and no
+// signature, and a row in the catalog that has none of those is a row every
+// signature check has to special-case.
+// ---------------------------------------------------------------------------
+
+model ThemeDraft {
+  id       String @id @default(uuid()) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  // The site whose content types, menus and locales the editor previews against.
+  // A drawing is authored for a site even though the theme it becomes is portable:
+  // an author binding a list to "post" needs to know whether "post" exists here.
+  siteId   String @map("site_id") @db.Uuid
+  // Nullable + SetNull: a draft outlives the person who left the company.
+  authorId String? @map("author_id") @db.Uuid
+
+  name        String
+  /**
+   * The reverse-DNS key the generated theme will claim, e.g. "com.acme.theme.shop".
+   * Proposed, not owned: nothing is reserved until a package is registered, and the
+   * sideload/marketplace paths independently refuse `vn.zsoft.` and any key already
+   * held by a built-in or marketplace theme (see assertNotImpersonating). Stored
+   * here so the editor can warn early rather than at the end of a build.
+   */
+  key         String
+  version     String  @default("0.1.0")
+  description String?
+
+  /**
+   * The LayoutDocument (see packages/schemas/src/layout.ts). JSONB, because the
+   * node model grows as widgets are added and a drawing must never require a
+   * migration. Validated against LayoutDocumentSchema on every write — this column
+   * is data that the code generator later turns into a signed package, so the
+   * validator is the fence, not a formality.
+   */
+  document Json
+
+  status     ThemeDraftStatus @default(DRAFT)
+  /**
+   * Why the last build failed, for the author to read. Cleared on the next attempt.
+   */
+  buildError String?          @map("build_error")
+  lastBuiltAt DateTime?       @map("last_built_at")
+
+  /**
+   * SHA-256 of the last build's payload — the digest the AUTHOR signs.
+   *
+   * Stored because signing happens in the author's browser, in a request that comes
+   * later: the build packs the payload, this records what it hashed to, and the
+   * browser signs exactly this string. Recomputing it at seal time would not work —
+   * a tar carries mtimes, so building twice yields two different digests and the
+   * signature would be over a payload that no longer exists.
+   */
+  payloadChecksum String? @map("payload_checksum")
+  /**
+   * Storage key of that payload, kept until it is sealed into a .zcms. Null once
+   * there is nothing staged.
+   */
+  payloadRef      String? @map("payload_ref")
+  submittedAt DateTime?       @map("submitted_at")
+  /**
+   * The marketplace's id for the submission, so the editor can show review state.
+   * Null until a submit succeeds.
+   */
+  submissionRef String?       @map("submission_ref")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site   Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  author User?  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  // One draft per proposed key per tenant: two drawings claiming the same theme key
+  // would race to register the same ThemeVersion, and the loser's build would fail
+  // at the very end with an error about a key its author never typed twice.
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@index([siteId])
+  @@map("theme_drafts")
+}
+
+// ---------------------------------------------------------------------------
+// Publisher key vault (TENANT table, RLS)
+//
+// The author's marketplace identity — the Ed25519 key that says "I wrote this" on
+// a package a stranger downloads.
+//
+// What is stored here is CIPHERTEXT THIS SERVER CANNOT OPEN. The key is wrapped in
+// the author's browser with a key derived from a passphrase that never leaves it,
+// so cms-api holds an opaque blob: compromising it yields an offline guessing
+// problem, not an identity.
+//
+// That is the whole reason this is not encrypted with an env key like the SMTP
+// password or the TOTP secret. Those protect against a stolen database dump, and
+// cms-api can read them — which is right, because cms-api is the thing that has to
+// USE them. Nothing on the server ever needs to use this key: only the author does.
+// A server that could open it would be a server that could sign as them, and the
+// marketplace's own design assumes exactly that key ends up somewhere it should not
+// (see packages.service.ts: "keys leak: a publisher's key ends up in a CI secret").
+//
+// It exists at all because the alternative — a key that lives only in one browser —
+// is lost the day somebody clears their site data.
+// ---------------------------------------------------------------------------
+
+model PublisherKeyVault {
+  id       String @id @default(uuid()) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  /**
+   * One key per person, not per tenant. The marketplace binds a Publisher to a
+   * single developer account, so a shared team key would need a shared passphrase —
+   * and a shared passphrase is a passphrase that ends up pasted into a chat.
+   */
+  userId   String @unique @map("user_id") @db.Uuid
+
+  /** SPKI PEM. Public by definition: this is what the author registers upstream. */
+  publicKeyPem String @map("public_key_pem")
+
+  /** The PKCS#8 private key, AES-GCM sealed under the passphrase-derived key. Base64. */
+  wrappedPrivateKey String @map("wrapped_private_key")
+  /** Base64. Random per key; makes a precomputed table useless. */
+  kdfSalt           String @map("kdf_salt")
+  /** Base64. Random per wrap. */
+  kdfIv             String @map("kdf_iv")
+  /**
+   * The KDF, recorded rather than assumed. The cost of a guess is what stands
+   * between a stolen row and the key, and that cost has to be raised over time —
+   * a stored parameter is what lets an old blob still open after the default moves.
+   */
+  kdf               String @default("PBKDF2-SHA256")
+  kdfIterations     Int    @map("kdf_iterations")
+
+  /**
+   * The marketplace API token this person minted for this instance, encrypted with
+   * MARKETPLACE_TOKEN_ENCRYPTION_KEY (AES-256-GCM, `common/secret-box`).
+   *
+   * Encrypted the way the SMTP password is, and NOT the way the key above is — the
+   * difference is the whole point. Nothing on this server ever needs the private
+   * key, so it is sealed under a passphrase the server does not have. cms-api DOES
+   * need this token: it is what authenticates the POST to the marketplace. A secret
+   * the server must use is a secret the server can read, and pretending otherwise
+   * would be theatre.
+   *
+   * The two live in one row because they are one thing — this person's identity
+   * upstream — but they are guarded differently on purpose, and that asymmetry is
+   * what makes stealing one of them insufficient: the token submits, the key signs,
+   * and `accept()` needs both.
+   */
+  marketplaceToken String? @map("marketplace_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("publisher_key_vaults")
+}
+
+enum ThemeDraftStatus {
+  DRAFT
+  // A theme.build job is running. Set by the enqueue, cleared by the worker, so a
+  // second Build press while one is in flight is refused rather than queued twice.
+  BUILDING
+  // Built and signed at least once — a bundle exists to preview or submit.
+  BUILT
+  SUBMITTED
+  FAILED
 }
 
 // ---------------------------------------------------------------------------

@@ -219,9 +219,17 @@
       "label": "Cài theme từ file",
       "detail": "Thêm mã theme chưa qua kiểm duyệt marketplace — và theme chạy không sandbox."
     },
+    "theme:author": {
+      "label": "Thiết kế theme",
+      "detail": "Tạo và sửa bản thiết kế theme trong trình soạn thảo. Bản thiết kế không hiển thị ở đâu cho tới khi có người build nó."
+    },
     "plugin:sideload": {
       "label": "Cài plugin từ file",
       "detail": "Thêm mã plugin chưa qua kiểm duyệt marketplace. Nó vẫn chạy trong sandbox."
+    },
+    "theme:publish": {
+      "label": "Phát hành theme lên marketplace",
+      "detail": "Đưa theme lên marketplace công khai dưới tên công ty này. Đã được duyệt thì không thu hồi được."
     }
   },
   "sideloadHint": "Các plugin bạn cài từ file. Sau khi duyệt, chúng chạy trong sandbox như mọi plugin khác.",

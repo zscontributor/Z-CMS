@@ -5,8 +5,10 @@ import {
   getSession,
   listInstalledThemes,
   listThemeCatalog,
+  listThemeDrafts,
   type InstalledThemeDto,
   type ThemeCatalogEntry,
+  type ThemeDraftSummaryDto,
 } from "@/lib/api";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/ui/table";
@@ -14,6 +16,7 @@ import { MediaGallery } from "@/components/ui/media-gallery";
 import { getT } from "@/lib/locale";
 import { SideloadUpload } from "@/components/sideload-controls";
 import { ActivateButton } from "./activate-button";
+import { ThemeDraftsPanel } from "./theme-drafts-panel";
 import { ThemeGrid } from "./theme-grid";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,10 +34,13 @@ export default async function AppearancePage() {
     return <div className="z-card p-10 text-center text-sm">{t("appearance.denied")}</div>;
   }
 
-  const [site, installed, catalog] = await Promise.all([
+  const [site, installed, catalog, drafts] = await Promise.all([
     getCurrentSite(),
     safe<InstalledThemeDto[]>(listInstalledThemes, []),
     safe<ThemeCatalogEntry[]>(listThemeCatalog, []),
+    // A reader without theme:author gets an empty list rather than a failed page:
+    // the drafts panel is one section of Appearance, not the reason to load it.
+    can(user, "theme:author") ? safe<ThemeDraftSummaryDto[]>(listThemeDrafts, []) : [],
   ]);
 
   const activeKey = site?.activeTheme?.key ?? null;
@@ -53,6 +59,10 @@ export default async function AppearancePage() {
   return (
     <>
       <PageHeader title={t("appearance.title")} description={t("appearance.description")} />
+
+      {can(user, "theme:author") ? (
+        <ThemeDraftsPanel drafts={drafts} canAuthor canBuild={canSideload} />
+      ) : null}
 
       {canSideload || sideloaded.length > 0 ? (
         <section className="mb-5">

@@ -1,0 +1,135 @@
+{
+  "layout": {
+    "skipToContent": "Skip to content",
+    "backToTop": "Back to top"
+  },
+  "colorMode": {
+    "toggle": "Switch between dark and light mode"
+  },
+  "language": {
+    "switch": "Change language"
+  },
+  "nav": {
+    "primary": "Primary",
+    "footer": "Footer",
+    "about": "About",
+    "outsourcing": "Outsourcing",
+    "products": "Products",
+    "contact": "Contact",
+    "blog": "Blog"
+  },
+  "hero": {
+    "eyebrow": "Software. Products. Partnership.",
+    "title1": "Engineering clarity.",
+    "title2": "Creating business momentum.",
+    "copy": "Z-SOFT helps businesses turn complex problems into clear digital products — stable in operation and ready to scale, from strategy and architecture to real-world delivery.",
+    "primary": "Explore our capabilities →",
+    "secondary": "See the product ecosystem",
+    "noteText": "A product engineering studio serving clients at home and abroad."
+  },
+  "philosophy": {
+    "eyebrow": "Our Philosophy",
+    "body": "A software project only truly succeeds when it produces measurable business results. That is why Z-SOFT starts by understanding your goals, risks and operations — before choosing a technology or writing a single line of code."
+  },
+  "service1": {
+    "cardLabel": "Outsourcing",
+    "cardText": "Experienced engineers, a transparent process, flexible to each model of collaboration.",
+    "eyebrow": "01 / Outsourcing",
+    "title": "Extend your team.<br>Accelerate your vision.",
+    "copy": "Z-SOFT works as an extended technology partner: we analyse the problem together, set priorities, control scope and take responsibility for the quality of what we ship.",
+    "point1": "Scope, timeline and acceptance criteria defined clearly from the start.",
+    "point2": "Transparent progress through sprints, regular demos and risk reports.",
+    "point3": "Architecture designed for security, performance and scalability.",
+    "cta": "Discuss a project"
+  },
+  "service2": {
+    "cardLabel": "Product Engineering",
+    "cardText": "From market research and system design to delivering and operating SaaS products.",
+    "eyebrow": "02 / Product",
+    "title": "Products shaped by<br>real business.",
+    "copy": "Z-SOFT builds and runs its own SaaS platforms. That experience lets us see a product as a complete business system — not just a beautiful interface or a set of working features.",
+    "point1": "Shaping the product around real needs and prioritised value.",
+    "point2": "Designing a consistent, easy-to-use experience that fits how you operate.",
+    "point3": "Preparing the foundation for growth, integration and long-term development.",
+    "cta": "Explore products"
+  },
+  "process": {
+    "eyebrow": "How we deliver",
+    "title": "Structured execution.<br>Predictable quality.",
+    "intro": "Every project is governed as a clear chain of decisions. You always know where the project stands, which risks are being handled and what value will be delivered next.",
+    "step1": { "title": "Discover", "copy": "Clarify the business goals, users, current processes and the constraints that matter." },
+    "step2": { "title": "Define", "copy": "Turn the problem into scope, priorities, a roadmap and verifiable acceptance criteria." },
+    "step3": { "title": "Design", "copy": "Design the experience, the business flows and the system architecture before building." },
+    "step4": { "title": "Build", "copy": "Build in short sprints, with code review, continuous testing and regular demos." },
+    "step5": { "title": "Validate", "copy": "Assess function, performance, security and readiness for real-world operation." },
+    "step6": { "title": "Evolve", "copy": "Monitor after launch, improve from data, and accompany you through growth stages." }
+  },
+  "quality": {
+    "eyebrow": "Quality by design",
+    "title": "Quality is not the final checking step.",
+    "copy": "Quality goes into every decision: from how modules are split and data is managed, to change control, deployment and recovery when something goes wrong.",
+    "item1": { "title": "Architecture Review", "copy": "Reviewing architecture, dependencies, scalability and operating cost." },
+    "item2": { "title": "Engineering Standards", "copy": "Code review, coding conventions, version control and consistent technical documentation." },
+    "item3": { "title": "Security Mindset", "copy": "Authorisation, data protection, audit trails and least-privilege access by principle." },
+    "item4": { "title": "Release Discipline", "copy": "Isolated environments, pre-release testing, rollback and post-deployment monitoring." }
+  },
+  "engagement": {
+    "eyebrow": "Engagement models",
+    "title": "A model of collaboration for every stage.",
+    "card1": { "title": "Dedicated Team", "copy": "Quickly scale your development capacity with a stable team that works as part of your company.", "tag": "Fits a long-term roadmap" },
+    "card2": { "title": "Project Delivery", "copy": "Z-SOFT owns everything from analysis and design to delivery, against an agreed scope and outcome.", "tag": "Fits clear objectives" },
+    "card3": { "title": "Product Partnership", "copy": "We accompany you in shaping, building, running and continuously improving the product.", "tag": "Fits a strategic product" }
+  },
+  "products": {
+    "eyebrow": "Z-SOFT Ecosystem",
+    "title": "A family of digital products.",
+    "copy": "An ecosystem built for businesses, teams and communities — sharing one philosophy: simple, flexible and able to grow for the long term.",
+    "item1": { "title": "Z-Cloud Workspace", "copy": "A unified digital workplace: chat, mail, files, documents, meetings and tasks." },
+    "item2": { "title": "Z-Auto", "copy": "A SaaS platform for car showrooms: inventory, customers and business performance." },
+    "item3": { "title": "Z-Pets", "copy": "A community for pet lovers, connecting owners, shops and services." },
+    "item4": { "title": "Z-Edu", "copy": "Digital education for schools, training centres and modern learning models." },
+    "item5": { "title": "Z-Focus", "copy": "A tool that helps people and teams focus on what matters, reduce interruptions and work better." }
+  },
+  "stats": {
+    "quote": "A business doesn't need another software vendor. It needs a partner who understands how technology creates advantage.",
+    "quoteAuthor": "— Z-SOFT Product Engineering Philosophy",
+    "metric1": { "value": "10+", "label": "Years of software development experience" },
+    "metric2": { "value": "5", "label": "Products in the ecosystem" },
+    "metric3": { "value": "24/7", "label": "Infrastructure and services monitored" },
+    "metric4": { "value": "VN / JP", "label": "Capability across the Vietnam and Japan markets" }
+  },
+  "cta": {
+    "eyebrow": "Start a conversation",
+    "title": "Let's build something meaningful.",
+    "copy": "Let's start with a clear conversation about goals, the current situation and risks. Z-SOFT will help you find the right direction before proposing a solution.",
+    "button": "Contact Z-SOFT →"
+  },
+  "footer": {
+    "tagline1": "Software outsourcing & product company",
+    "tagline2": "Da Nang, Vietnam"
+  },
+  "post": {
+    "backToPosts": "Back to posts",
+    "readingTime": "{minutes} min read"
+  },
+  "archive": {
+    "empty": "Nothing here yet.",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has moved.",
+    "backHome": "Back to home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "reference": "Reference",
+    "backHome": "Back to home"
+  },
+  "latest": {
+    "empty": "No posts yet."
+  }
+}

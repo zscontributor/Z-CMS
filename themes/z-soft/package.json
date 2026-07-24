@@ -1,0 +1,36 @@
+{
+  "name": "@zcmsorg/theme-z-soft",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Z-SOFT — a modern, editorial company & product theme for software studios. English, Japanese and Vietnamese, with dark and light modes.",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "files": [
+    "src",
+    "assets",
+    "screenshots",
+    "dist",
+    "theme.json"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "screenshots": "tsx ../../scripts/theme-screenshots.mts z-soft",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zcmsorg/schemas": "workspace:*",
+    "@zcmsorg/theme-sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "esbuild": "0.25.12",
+    "react": "19.2.7",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

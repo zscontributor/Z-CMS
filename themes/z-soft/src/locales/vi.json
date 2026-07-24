@@ -1,0 +1,135 @@
+{
+  "layout": {
+    "skipToContent": "Bỏ qua tới nội dung",
+    "backToTop": "Lên đầu trang"
+  },
+  "colorMode": {
+    "toggle": "Chuyển giao diện sáng / tối"
+  },
+  "language": {
+    "switch": "Đổi ngôn ngữ"
+  },
+  "nav": {
+    "primary": "Chính",
+    "footer": "Chân trang",
+    "about": "Giới thiệu",
+    "outsourcing": "Outsourcing",
+    "products": "Sản phẩm",
+    "contact": "Liên hệ",
+    "blog": "Blog"
+  },
+  "hero": {
+    "eyebrow": "Software. Products. Partnership.",
+    "title1": "Engineering clarity.",
+    "title2": "Creating business momentum.",
+    "copy": "Z-SOFT giúp doanh nghiệp biến những bài toán phức tạp thành sản phẩm số rõ ràng, vận hành ổn định và sẵn sàng mở rộng — từ chiến lược, kiến trúc đến triển khai thực tế.",
+    "primary": "Khám phá năng lực →",
+    "secondary": "Xem hệ sinh thái sản phẩm",
+    "noteText": "Product engineering studio phục vụ khách hàng trong nước và quốc tế."
+  },
+  "philosophy": {
+    "eyebrow": "Our Philosophy",
+    "body": "Một dự án phần mềm chỉ thực sự thành công khi tạo ra kết quả kinh doanh có thể đo lường. Vì vậy, Z-SOFT bắt đầu bằng việc hiểu mục tiêu, rủi ro và cách vận hành của doanh nghiệp — trước khi lựa chọn công nghệ hay viết bất kỳ dòng code nào."
+  },
+  "service1": {
+    "cardLabel": "Outsourcing",
+    "cardText": "Đội ngũ kỹ sư giàu kinh nghiệm, quy trình minh bạch, linh hoạt theo từng mô hình hợp tác.",
+    "eyebrow": "01 / Outsourcing",
+    "title": "Extend your team.<br>Accelerate your vision.",
+    "copy": "Z-SOFT hoạt động như một đối tác công nghệ mở rộng của doanh nghiệp: cùng phân tích vấn đề, xác lập ưu tiên, kiểm soát phạm vi và chịu trách nhiệm về chất lượng đầu ra.",
+    "point1": "Phạm vi, timeline và tiêu chí nghiệm thu được xác định rõ ngay từ đầu.",
+    "point2": "Tiến độ minh bạch qua sprint, demo định kỳ và báo cáo rủi ro.",
+    "point3": "Kiến trúc được thiết kế cho bảo mật, hiệu năng và khả năng mở rộng.",
+    "cta": "Trao đổi dự án"
+  },
+  "service2": {
+    "cardLabel": "Product Engineering",
+    "cardText": "Từ nghiên cứu thị trường, thiết kế hệ thống đến triển khai và vận hành sản phẩm SaaS.",
+    "eyebrow": "02 / Product",
+    "title": "Products shaped by<br>real business.",
+    "copy": "Z-SOFT trực tiếp xây dựng và vận hành các nền tảng SaaS của riêng mình. Kinh nghiệm đó giúp chúng tôi nhìn một sản phẩm như một hệ thống kinh doanh hoàn chỉnh — không chỉ là giao diện đẹp hay một bộ tính năng hoạt động.",
+    "point1": "Định hình sản phẩm dựa trên nhu cầu thật và giá trị ưu tiên.",
+    "point2": "Thiết kế trải nghiệm nhất quán, dễ dùng và phù hợp quy trình vận hành.",
+    "point3": "Chuẩn bị nền tảng cho tăng trưởng, tích hợp và phát triển dài hạn.",
+    "cta": "Khám phá sản phẩm"
+  },
+  "process": {
+    "eyebrow": "How we deliver",
+    "title": "Structured execution.<br>Predictable quality.",
+    "intro": "Mỗi dự án được quản trị theo một chuỗi quyết định rõ ràng. Doanh nghiệp luôn biết dự án đang ở đâu, rủi ro nào đang được xử lý và giá trị nào sẽ được bàn giao tiếp theo.",
+    "step1": { "title": "Discover", "copy": "Làm rõ mục tiêu kinh doanh, người dùng, quy trình hiện tại và các ràng buộc quan trọng." },
+    "step2": { "title": "Define", "copy": "Chuyển bài toán thành phạm vi, ưu tiên, roadmap và tiêu chí nghiệm thu có thể kiểm chứng." },
+    "step3": { "title": "Design", "copy": "Thiết kế trải nghiệm, luồng nghiệp vụ và kiến trúc hệ thống trước khi phát triển." },
+    "step4": { "title": "Build", "copy": "Phát triển theo sprint ngắn, review code, kiểm thử liên tục và demo định kỳ." },
+    "step5": { "title": "Validate", "copy": "Đánh giá chức năng, hiệu năng, bảo mật và mức độ sẵn sàng cho vận hành thực tế." },
+    "step6": { "title": "Evolve", "copy": "Theo dõi sau triển khai, cải tiến dựa trên dữ liệu và đồng hành trong các giai đoạn tăng trưởng." }
+  },
+  "quality": {
+    "eyebrow": "Quality by design",
+    "title": "Chất lượng không phải là bước kiểm tra cuối cùng.",
+    "copy": "Chất lượng được đưa vào mọi quyết định: từ cách chia module, quản lý dữ liệu, kiểm soát thay đổi đến phương án triển khai và phục hồi khi có sự cố.",
+    "item1": { "title": "Architecture Review", "copy": "Đánh giá kiến trúc, phụ thuộc, khả năng mở rộng và chi phí vận hành." },
+    "item2": { "title": "Engineering Standards", "copy": "Code review, coding convention, version control và tài liệu kỹ thuật nhất quán." },
+    "item3": { "title": "Security Mindset", "copy": "Phân quyền, bảo vệ dữ liệu, audit trail và nguyên tắc giảm thiểu quyền truy cập." },
+    "item4": { "title": "Release Discipline", "copy": "Môi trường tách biệt, kiểm thử trước phát hành, rollback và giám sát sau triển khai." }
+  },
+  "engagement": {
+    "eyebrow": "Engagement models",
+    "title": "Một mô hình hợp tác phù hợp với từng giai đoạn.",
+    "card1": { "title": "Dedicated Team", "copy": "Mở rộng nhanh năng lực phát triển với đội ngũ ổn định, làm việc như một phần của doanh nghiệp.", "tag": "Phù hợp với roadmap dài hạn" },
+    "card2": { "title": "Project Delivery", "copy": "Z-SOFT chịu trách nhiệm từ phân tích, thiết kế đến bàn giao theo phạm vi và kết quả đã thống nhất.", "tag": "Phù hợp với mục tiêu rõ ràng" },
+    "card3": { "title": "Product Partnership", "copy": "Đồng hành cùng doanh nghiệp trong việc định hình, xây dựng, vận hành và liên tục cải tiến sản phẩm.", "tag": "Phù hợp với sản phẩm chiến lược" }
+  },
+  "products": {
+    "eyebrow": "Z-SOFT Ecosystem",
+    "title": "A family of digital products.",
+    "copy": "Hệ sinh thái sản phẩm được xây dựng cho doanh nghiệp, đội nhóm và cộng đồng — với chung một triết lý: đơn giản, linh hoạt và có khả năng phát triển lâu dài.",
+    "item1": { "title": "Z-Cloud Workspace", "copy": "Nền tảng làm việc số hợp nhất cho doanh nghiệp: chat, mail, file, tài liệu, cuộc họp và công việc." },
+    "item2": { "title": "Z-Auto", "copy": "Nền tảng SaaS quản lý showroom ô tô, tồn kho, khách hàng và hiệu quả kinh doanh." },
+    "item3": { "title": "Z-Pets", "copy": "Cộng đồng dành cho người yêu thú cưng, kết nối pet owner, cửa hàng và dịch vụ." },
+    "item4": { "title": "Z-Edu", "copy": "Giải pháp giáo dục số cho nhà trường, trung tâm đào tạo và các mô hình học tập hiện đại." },
+    "item5": { "title": "Z-Focus", "copy": "Công cụ giúp cá nhân và đội nhóm tập trung vào công việc quan trọng, giảm gián đoạn và làm việc hiệu quả hơn." }
+  },
+  "stats": {
+    "quote": "Doanh nghiệp không cần thêm một nhà cung cấp phần mềm. Doanh nghiệp cần một đối tác hiểu cách công nghệ tạo ra lợi thế.",
+    "quoteAuthor": "— Triết lý Product Engineering của Z-SOFT",
+    "metric1": { "value": "10+", "label": "Năm kinh nghiệm phát triển phần mềm" },
+    "metric2": { "value": "5", "label": "Sản phẩm trong hệ sinh thái" },
+    "metric3": { "value": "24/7", "label": "Hạ tầng và dịch vụ được giám sát" },
+    "metric4": { "value": "VN / JP", "label": "Năng lực hợp tác thị trường Việt Nam và Nhật Bản" }
+  },
+  "cta": {
+    "eyebrow": "Start a conversation",
+    "title": "Let's build something meaningful.",
+    "copy": "Hãy bắt đầu bằng một cuộc trao đổi rõ ràng về mục tiêu, hiện trạng và rủi ro. Z-SOFT sẽ cùng doanh nghiệp xác định hướng đi phù hợp trước khi đề xuất giải pháp.",
+    "button": "Liên hệ Z-SOFT →"
+  },
+  "footer": {
+    "tagline1": "Công ty phần mềm outsourcing & sản phẩm",
+    "tagline2": "Đà Nẵng, Việt Nam"
+  },
+  "post": {
+    "backToPosts": "Về danh sách bài viết",
+    "readingTime": "Đọc {minutes} phút"
+  },
+  "archive": {
+    "empty": "Chưa có nội dung nào.",
+    "previous": "Trước",
+    "next": "Sau",
+    "pageOf": "Trang {page} / {total}"
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
+    "backHome": "Về trang chủ"
+  },
+  "error": {
+    "title": "Đã có lỗi xảy ra",
+    "description": "Một lỗi không mong muốn đã xảy ra. Vui lòng thử lại.",
+    "reference": "Mã tham chiếu",
+    "backHome": "Về trang chủ"
+  },
+  "latest": {
+    "empty": "Chưa có bài viết nào."
+  }
+}

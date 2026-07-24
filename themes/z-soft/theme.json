@@ -1,0 +1,476 @@
+{
+  "id": "vn.zsoft.theme.zsoft",
+  "name": "Z-SOFT",
+  "version": "1.0.0",
+  "kind": "theme",
+  "description": "A modern, editorial company & product theme for software studios: a cinematic hero, zigzag capability sections, a delivery process, a product ecosystem grid and a metrics wall. English, Japanese and Vietnamese, with dark and light modes.",
+  "author": {
+    "name": "Z-SOFT Co., Ltd.",
+    "url": "https://z-soft.com.vn"
+  },
+  "engine": ">=0.1.0",
+  "entry": "dist/index.mjs",
+  "styles": "dist/theme.css",
+  "templates": ["home", "page", "post", "archive", "notFound", "error"],
+  "optionalCapabilities": ["ai.assistant"],
+  "integrationSlots": ["floating"],
+  "menuLocations": [
+    { "key": "primary", "name": "Primary menu" },
+    { "key": "footer", "name": "Footer menu" }
+  ],
+  "colorModes": {
+    "supports": ["light", "dark"],
+    "default": "system"
+  },
+  "collections": {
+    "latest": {
+      "contentType": "post",
+      "limit": 6,
+      "sort": "newest"
+    }
+  },
+  "media": {
+    "screenshots": [
+      "screenshots/1-home-light.png",
+      "screenshots/2-home-dark.png",
+      "screenshots/3-article.png"
+    ]
+  },
+  "seo": {
+    "titleTemplate": "%s — %site%",
+    "robots": { "index": true, "follow": true },
+    "icons": {
+      "favicon": "assets/favicon.ico",
+      "icon": "assets/icon.png",
+      "appleTouchIcon": "assets/apple-touch-icon.png",
+      "themeColor": "#d4a75f"
+    },
+    "organization": {
+      "name": "Z-SOFT Co., Ltd.",
+      "url": "https://z-soft.com.vn"
+    }
+  },
+  "settingsSchema": {
+    "type": "object",
+    "properties": {
+      "primaryColor": {
+        "type": "string",
+        "title": "Accent colour",
+        "description": "The gold used for eyebrows, numbers and highlights. Leave empty to use the site's brand colour.",
+        "format": "color",
+        "default": "#d4a75f"
+      },
+      "siteTitle": {
+        "type": "string",
+        "title": "Site title",
+        "default": "Z-SOFT"
+      },
+      "logo": {
+        "type": "string",
+        "title": "Logo",
+        "description": "Shown in the header. Leave empty to use the site's logo, or the Z wordmark this theme draws.",
+        "format": "image",
+        "default": ""
+      },
+      "tagline": {
+        "type": "string",
+        "title": "Tagline",
+        "description": "Shown in the footer, under the wordmark.",
+        "default": "Designed with clarity & craftsmanship."
+      },
+      "heroImage": {
+        "type": "string",
+        "title": "Hero background image",
+        "description": "The full-bleed image behind the hero. An upload, or any image URL.",
+        "format": "image",
+        "default": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=85"
+      },
+      "heroLocation": {
+        "type": "string",
+        "title": "Hero location note",
+        "description": "The small note in the hero corner, e.g. your city.",
+        "default": "Da Nang, Vietnam"
+      },
+      "heroPrimaryHref": {
+        "type": "string",
+        "title": "Hero — primary button link",
+        "default": "#outsourcing"
+      },
+      "heroSecondaryHref": {
+        "type": "string",
+        "title": "Hero — secondary button link",
+        "default": "#products"
+      },
+      "service1Image": {
+        "type": "string",
+        "title": "Service 1 image (Outsourcing)",
+        "format": "image",
+        "default": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=85"
+      },
+      "service1Href": {
+        "type": "string",
+        "title": "Service 1 button link",
+        "default": "#contact"
+      },
+      "service2Image": {
+        "type": "string",
+        "title": "Service 2 image (Product)",
+        "format": "image",
+        "default": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=85"
+      },
+      "service2Href": {
+        "type": "string",
+        "title": "Service 2 button link",
+        "default": "#products"
+      },
+      "product1Href": {
+        "type": "string",
+        "title": "Product 1 link (Z-Cloud Workspace)",
+        "format": "url",
+        "default": ""
+      },
+      "product2Href": {
+        "type": "string",
+        "title": "Product 2 link (Z-Auto)",
+        "format": "url",
+        "default": ""
+      },
+      "product3Href": {
+        "type": "string",
+        "title": "Product 3 link (Z-Pets)",
+        "format": "url",
+        "default": ""
+      },
+      "product4Href": {
+        "type": "string",
+        "title": "Product 4 link (Z-Edu)",
+        "format": "url",
+        "default": ""
+      },
+      "product5Href": {
+        "type": "string",
+        "title": "Product 5 link (Z-Focus)",
+        "format": "url",
+        "default": ""
+      },
+      "contactEmail": {
+        "type": "string",
+        "title": "Contact email",
+        "description": "Where the closing call-to-action button points.",
+        "default": "contact@z-soft.vn"
+      },
+      "linkedinUrl": {
+        "type": "string",
+        "title": "LinkedIn URL",
+        "format": "url",
+        "default": ""
+      },
+      "facebookUrl": {
+        "type": "string",
+        "title": "Facebook URL",
+        "format": "url",
+        "default": ""
+      },
+      "showProcess": {
+        "type": "boolean",
+        "title": "Show the delivery process section",
+        "default": true
+      },
+      "showQuality": {
+        "type": "boolean",
+        "title": "Show the quality section",
+        "default": true
+      },
+      "showEngagement": {
+        "type": "boolean",
+        "title": "Show the engagement models section",
+        "default": true
+      },
+      "showProducts": {
+        "type": "boolean",
+        "title": "Show the product ecosystem section",
+        "default": true
+      },
+      "showStats": {
+        "type": "boolean",
+        "title": "Show the quote & metrics section",
+        "default": true
+      },
+      "colorMode": {
+        "type": "string",
+        "title": "Default colour mode",
+        "description": "Where a first-time visitor starts. \"System\" follows their device. A visitor who uses the switch keeps their own choice.",
+        "enum": ["system", "light", "dark"],
+        "default": "system"
+      },
+      "metaDescription": {
+        "type": "string",
+        "title": "Meta description",
+        "description": "Used for pages that have no description of their own. Around 150–160 characters.",
+        "format": "textarea",
+        "default": "Z-SOFT is a software outsourcing & product company. We turn complex problems into clear, reliable, scalable digital products — from strategy and architecture to delivery."
+      },
+      "ogImage": {
+        "type": "string",
+        "title": "Social share image",
+        "description": "Shown when a page with no image of its own is shared.",
+        "format": "image",
+        "default": ""
+      },
+      "favicon": {
+        "type": "string",
+        "title": "Favicon",
+        "description": "Browser tab icon. An .ico, .png or .svg.",
+        "format": "image",
+        "default": ""
+      },
+      "twitterSite": {
+        "type": "string",
+        "title": "X / Twitter handle",
+        "description": "Including the @, e.g. @zsoft.",
+        "default": ""
+      },
+      "noindex": {
+        "type": "boolean",
+        "title": "Discourage search engines",
+        "description": "Turn on for a staging site. No individual page can override this.",
+        "default": false
+      },
+      "organizationName": {
+        "type": "string",
+        "title": "Organisation name",
+        "default": "Z-SOFT Co., Ltd."
+      },
+      "organizationUrl": {
+        "type": "string",
+        "title": "Organisation website",
+        "format": "url",
+        "default": "https://z-soft.com.vn"
+      },
+      "organizationLogo": {
+        "type": "string",
+        "title": "Organisation logo",
+        "description": "Used in search results. A square image reads best.",
+        "format": "image",
+        "default": ""
+      },
+      "socialProfiles": {
+        "type": "string",
+        "title": "Social profiles",
+        "description": "One URL per line. Confirms to search engines that these profiles are the same organisation.",
+        "format": "textarea",
+        "default": ""
+      },
+      "footerText": {
+        "type": "string",
+        "title": "Footer copyright",
+        "default": "© 2026 Z-SOFT CO., LTD. All rights reserved."
+      }
+    }
+  },
+  "demo": {
+    "settings": {
+      "siteTitle": "Z-SOFT",
+      "primaryColor": "#d4a75f",
+      "contactEmail": "contact@z-soft.vn",
+      "organizationName": "Z-SOFT Co., Ltd.",
+      "organizationUrl": "https://z-soft.com.vn"
+    },
+    "contentTypes": [
+      {
+        "key": "page",
+        "name": "Page",
+        "pluralName": "Pages",
+        "routePrefix": "",
+        "hasBlocks": true,
+        "icon": "file-text",
+        "fields": []
+      },
+      {
+        "key": "post",
+        "name": "Post",
+        "pluralName": "Posts",
+        "routePrefix": "blog",
+        "hasBlocks": true,
+        "icon": "newspaper",
+        "fields": [
+          { "key": "readingTime", "type": "number", "label": "Reading time", "required": false }
+        ]
+      }
+    ],
+    "menus": [
+      {
+        "key": "primary",
+        "name": "Primary menu",
+        "items": [
+          { "label": "About", "url": "/#about" },
+          { "label": "Outsourcing", "url": "/#outsourcing" },
+          { "label": "Products", "url": "/#products" },
+          { "label": "Contact", "url": "/#contact" }
+        ]
+      },
+      {
+        "key": "footer",
+        "name": "Footer menu",
+        "items": [
+          { "label": "About", "url": "/#about" },
+          { "label": "Outsourcing", "url": "/#outsourcing" },
+          { "label": "Products", "url": "/#products" },
+          { "label": "Contact", "url": "/#contact" }
+        ]
+      }
+    ],
+    "contents": [
+      {
+        "contentType": "page",
+        "locale": "en",
+        "slug": "",
+        "title": "Z-SOFT — Modern Software & Product Company",
+        "translationGroup": "zsoft-home",
+        "excerpt": "A software outsourcing and product company, building clear, reliable and scalable digital products.",
+        "seo": {
+          "title": "Z-SOFT — Modern Software & Product Company",
+          "description": "Z-SOFT turns complex problems into clear digital products — from strategy and architecture to delivery, for clients in Vietnam, Japan and beyond."
+        },
+        "blocks": [
+          {
+            "id": "home-welcome-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Content you can edit</h2><p>The landing sections above — the hero, the capability rows, the process, the product ecosystem — are drawn by the <strong>Z-SOFT</strong> theme from your <em>Theme settings</em> and its built-in translations. Everything in this block, and any block you add below, is ordinary page content you edit in the admin.</p>"
+            }
+          },
+          {
+            "id": "home-features-en",
+            "type": "core/features",
+            "props": {
+              "heading": "Three ways we work with you",
+              "items": [
+                { "title": "Dedicated Team", "description": "Scale your engineering with a stable team that works as part of your company." },
+                { "title": "Project Delivery", "description": "We own analysis, design and delivery against a scope and outcome we agree up front." },
+                { "title": "Product Partnership", "description": "We help shape, build, run and continuously improve a strategic product with you." }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "vi",
+        "slug": "",
+        "title": "Z-SOFT — Công ty phần mềm & sản phẩm hiện đại",
+        "translationGroup": "zsoft-home",
+        "excerpt": "Công ty phần mềm outsourcing và phát triển sản phẩm, tạo ra các sản phẩm số rõ ràng, ổn định và sẵn sàng mở rộng.",
+        "seo": {
+          "title": "Z-SOFT — Công ty phần mềm & sản phẩm hiện đại",
+          "description": "Z-SOFT biến những bài toán phức tạp thành sản phẩm số rõ ràng — từ chiến lược, kiến trúc đến triển khai, phục vụ khách hàng trong nước, Nhật Bản và quốc tế."
+        },
+        "blocks": [
+          {
+            "id": "home-welcome-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>Nội dung bạn có thể chỉnh sửa</h2><p>Các phần landing phía trên — hero, các hàng năng lực, quy trình, hệ sinh thái sản phẩm — do theme <strong>Z-SOFT</strong> vẽ ra từ <em>Cấu hình theme</em> và bản dịch tích hợp sẵn. Mọi thứ trong khối này, và bất kỳ khối nào bạn thêm bên dưới, là nội dung trang thông thường mà bạn sửa trong trang quản trị.</p>"
+            }
+          },
+          {
+            "id": "home-features-vi",
+            "type": "core/features",
+            "props": {
+              "heading": "Ba cách chúng tôi đồng hành cùng bạn",
+              "items": [
+                { "title": "Dedicated Team", "description": "Mở rộng năng lực phát triển với đội ngũ ổn định, làm việc như một phần của doanh nghiệp." },
+                { "title": "Project Delivery", "description": "Z-SOFT chịu trách nhiệm phân tích, thiết kế đến bàn giao theo phạm vi và kết quả đã thống nhất." },
+                { "title": "Product Partnership", "description": "Đồng hành cùng bạn định hình, xây dựng, vận hành và liên tục cải tiến sản phẩm chiến lược." }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "ja",
+        "slug": "",
+        "title": "Z-SOFT — モダンなソフトウェア＆プロダクト企業",
+        "translationGroup": "zsoft-home",
+        "excerpt": "明快で信頼性が高く、拡張可能なデジタルプロダクトを構築する、ソフトウェア受託開発・自社プロダクト企業。",
+        "seo": {
+          "title": "Z-SOFT — モダンなソフトウェア＆プロダクト企業",
+          "description": "Z-SOFT は複雑な課題を明快なデジタルプロダクトへと変えます。戦略・設計から実装まで、日本を含む国内外のお客様に。"
+        },
+        "blocks": [
+          {
+            "id": "home-welcome-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<h2>編集できるコンテンツ</h2><p>上のランディング部分（ヒーロー、ケイパビリティの各行、プロセス、プロダクトのエコシステム）は、<strong>Z-SOFT</strong> テーマが「テーマ設定」と組み込みの翻訳から描画しています。このブロック、そして下に追加するブロックは、管理画面で編集できる通常のページコンテンツです。</p>"
+            }
+          },
+          {
+            "id": "home-features-ja",
+            "type": "core/features",
+            "props": {
+              "heading": "3 つの協業モデル",
+              "items": [
+                { "title": "Dedicated Team", "description": "安定したチームが企業の一部として稼働し、開発力を素早く拡張します。" },
+                { "title": "Project Delivery", "description": "分析・設計から納品まで、合意したスコープと成果に責任を持ちます。" },
+                { "title": "Product Partnership", "description": "戦略的プロダクトの構想・構築・運用・継続的改善を共に進めます。" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "en",
+        "slug": "about",
+        "title": "About Z-SOFT",
+        "translationGroup": "zsoft-about",
+        "excerpt": "Who we are and how we work.",
+        "blocks": [
+          {
+            "id": "about-body-en",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-SOFT is a software outsourcing and product company based in Da Nang, Vietnam. We believe a software project only succeeds when it creates measurable business results — so we start by understanding your goals, risks and operations, before choosing a technology or writing a line of code.</p><h2>What we do</h2><p>We act as an extended technology partner: analysing the problem, setting priorities, controlling scope and owning the quality of what we deliver. Alongside client work, we build and operate our own family of SaaS products, which is what lets us see a product as a complete business system rather than a set of features.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "vi",
+        "slug": "gioi-thieu",
+        "title": "Giới thiệu Z-SOFT",
+        "translationGroup": "zsoft-about",
+        "excerpt": "Chúng tôi là ai và cách chúng tôi làm việc.",
+        "blocks": [
+          {
+            "id": "about-body-vi",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-SOFT là công ty phần mềm outsourcing và phát triển sản phẩm có trụ sở tại Đà Nẵng, Việt Nam. Chúng tôi tin rằng một dự án phần mềm chỉ thực sự thành công khi tạo ra kết quả kinh doanh có thể đo lường — vì vậy chúng tôi bắt đầu bằng việc hiểu mục tiêu, rủi ro và cách vận hành của doanh nghiệp, trước khi chọn công nghệ hay viết bất kỳ dòng code nào.</p><h2>Chúng tôi làm gì</h2><p>Z-SOFT hoạt động như một đối tác công nghệ mở rộng: phân tích vấn đề, xác lập ưu tiên, kiểm soát phạm vi và chịu trách nhiệm về chất lượng đầu ra. Song song với dự án khách hàng, chúng tôi trực tiếp xây dựng và vận hành hệ sinh thái sản phẩm SaaS của riêng mình — điều giúp chúng tôi nhìn một sản phẩm như một hệ thống kinh doanh hoàn chỉnh, không chỉ là một bộ tính năng.</p>"
+            }
+          }
+        ]
+      },
+      {
+        "contentType": "page",
+        "locale": "ja",
+        "slug": "about",
+        "title": "Z-SOFT について",
+        "translationGroup": "zsoft-about",
+        "excerpt": "私たちは何者で、どのように働くか。",
+        "blocks": [
+          {
+            "id": "about-body-ja",
+            "type": "core/richtext",
+            "props": {
+              "html": "<p>Z-SOFT はベトナム・ダナンを拠点とする、ソフトウェア受託開発・自社プロダクト企業です。ソフトウェアプロジェクトは測定可能なビジネス成果を生んで初めて成功だと考えています。だからこそ、技術を選ぶ前に、そして一行のコードを書く前に、まずお客様の目標・リスク・業務を理解することから始めます。</p><h2>事業内容</h2><p>Z-SOFT は拡張された技術パートナーとして、課題の分析、優先順位付け、スコープ管理、成果物の品質に責任を持ちます。受託開発と並行して、自社の SaaS プロダクト群を自ら構築・運用しており、それがプロダクトを単なる機能の集合ではなく、完結したビジネスシステムとして捉える視点につながっています。</p>"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
